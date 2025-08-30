@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found - TransferRank{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="error-page py-5">
+                <i class="fas fa-search fa-5x text-muted mb-4"></i>
+                <h1 class="display-4 mb-3">404</h1>
+                <h2 class="mb-3">Page Not Found</h2>
+                <p class="lead text-muted mb-4">
+                    Sorry, the page you're looking for doesn't exist. 
+                    It might have been moved, deleted, or you entered the wrong URL.
+                </p>
+                
+                <div class="d-flex flex-column flex-md-row gap-2 justify-content-center">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary">
+                        <i class="fas fa-home me-1"></i>Go to Leaderboard
+                    </a>
+                    <a href="{{ url_for('add_rumour') }}" class="btn btn-outline-success">
+                        <i class="fas fa-plus me-1"></i>Add Rumour
+                    </a>
+                    <button onclick="history.back()" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Go Back
+                    </button>
+                </div>
+                
+                <hr class="my-5">
+                
+                <div class="helpful-links">
+                    <h5 class="mb-3">Popular Pages</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li><a href="{{ url_for('index') }}" class="text-decoration-none">
+                                    <i class="fas fa-trophy me-1"></i>Transfer Leaderboard
+                                </a></li>
+                                <li><a href="{{ url_for('add_rumour') }}" class="text-decoration-none">
+                                    <i class="fas fa-plus me-1"></i>Add New Rumour
+                                </a></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li><a href="{{ url_for('upload_csv') }}" class="text-decoration-none">
+                                    <i class="fas fa-upload me-1"></i>Upload CSV
+                                </a></li>
+                                <li><a href="{{ url_for('admin') }}" class="text-decoration-none">
+                                    <i class="fas fa-cog me-1"></i>Admin Panel
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

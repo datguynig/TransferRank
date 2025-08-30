@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Upload CSV - TransferRank{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Leaderboard</a></li>
+            <li class="breadcrumb-item active">Upload CSV</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-upload me-2"></i>Bulk Import Transfer Rumours
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-4">
+                            <div class="alert alert-info" role="alert">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>CSV Format Requirements:</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li>First row must contain column headers</li>
+                                    <li>Required fields: player_name, position, age, nationality, current_club, target_club, league, source_name, source_type</li>
+                                    <li>Optional fields: reported_fee, wage_estimate, contract_years_left, source_url, source_claim</li>
+                                    <li>Maximum file size: 5MB</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            {{ form.csv_file.label(class="form-label") }}
+                            {{ form.csv_file(class="form-control", accept=".csv") }}
+                            {% if form.csv_file.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.csv_file.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="text-muted">
+                                Choose a CSV file containing transfer rumour data. 
+                                <a href="/data/rumours_template.csv" class="text-decoration-none" download>
+                                    <i class="fas fa-download me-1"></i>Download template
+                                </a>
+                            </small>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload me-1"></i>Upload and Import
+                            </button>
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Error Display -->
+            {% if errors %}
+                <div class="card mt-4">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Import Errors
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">The following errors occurred during import:</p>
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                {% for error in errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <p class="text-muted">
+                            Please fix these errors in your CSV file and try again. 
+                            Successfully imported rows have been saved.
+                        </p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4">
+            <!-- CSV Template -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file-csv me-2"></i>CSV Template
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Download our CSV template to ensure proper formatting:</p>
+                    <a href="/data/rumours_template.csv" class="btn btn-outline-primary w-100" download>
+                        <i class="fas fa-download me-1"></i>Download Template
+                    </a>
+                    
+                    <hr>
+                    
+                    <h6>Required Columns:</h6>
+                    <ul class="list-unstyled text-muted small">
+                        <li>• player_name</li>
+                        <li>• position</li>
+                        <li>• age</li>
+                        <li>• nationality</li>
+                        <li>• current_club</li>
+                        <li>• target_club</li>
+                        <li>• league</li>
+                        <li>• source_name</li>
+                        <li>• source_type</li>
+                    </ul>
+                    
+                    <h6 class="mt-3">Optional Columns:</h6>
+                    <ul class="list-unstyled text-muted small">
+                        <li>• reported_fee</li>
+                        <li>• wage_estimate</li>
+                        <li>• contract_years_left</li>
+                        <li>• source_url</li>
+                        <li>• source_claim</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Field Guidelines -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list-check me-2"></i>Field Guidelines
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="field-guide">
+                        <div class="mb-3">
+                            <strong>Position Values:</strong>
+                            <p class="text-muted small mb-0">
+                                GK, CB, LB, RB, DM, CM, AM, LW, RW, ST
+                            </p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>Age Band Values:</strong>
+                            <p class="text-muted small mb-0">
+                                16-19, 20-24, 25-29, 30-34, 35+
+                            </p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>League Values:</strong>
+                            <p class="text-muted small mb-0">
+                                Premier League, La Liga, Serie A, Bundesliga, Ligue 1, Other
+                            </p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>Source Type Values:</strong>
+                            <p class="text-muted small mb-0">
+                                journalist, club, outlet, aggregator
+                            </p>
+                        </div>
+                        
+                        <div>
+                            <strong>Fee Format:</strong>
+                            <p class="text-muted small mb-0">
+                                Numbers only (e.g., 50 for €50M)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Import Tips -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Import Tips
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Test with small files first</strong> to verify format
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Use UTF-8 encoding</strong> for special characters
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Avoid commas in text fields</strong> or use quotes
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Check spelling</strong> of club names and leagues
+                        </li>
+                        <li>
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Leave optional fields blank</strong> if no data available
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// File upload validation
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('csv_file');
+    
+    fileInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            // Check file size (5MB limit)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size must be less than 5MB');
+                this.value = '';
+                return;
+            }
+            
+            // Check file extension
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                alert('Please select a CSV file');
+                this.value = '';
+                return;
+            }
+            
+            // Show file info
+            console.log(`Selected file: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
+        }
+    });
+});
+</script>
+{% endblock %}

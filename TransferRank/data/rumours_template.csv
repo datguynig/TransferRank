@@ -1,0 +1,16 @@
+player_name,position,age_band,nationality,current_club,target_club,league,reported_fee,wage_estimate,contract_years_left,source_name,source_type,source_url,source_claim
+Kylian Mbappé,LW,25-29,France,Paris Saint-Germain,Real Madrid,La Liga,180.0,800.0,0.5,Fabrizio Romano,journalist,https://twitter.com/FabrizioRomano,Real Madrid confident of signing Mbappé as free agent
+Erling Haaland,ST,20-24,Norway,Manchester City,Barcelona,La Liga,200.0,600.0,4.0,David Ornstein,journalist,https://theathletic.com,Barcelona exploring Haaland possibility
+Jude Bellingham,CM,20-24,England,Real Madrid,Liverpool,Premier League,150.0,350.0,4.5,Paul Joyce,journalist,https://thetimes.co.uk,Liverpool monitoring Bellingham situation
+Vinícius Júnior,LW,20-24,Brazil,Real Madrid,Manchester United,Premier League,120.0,400.0,3.0,James Ducker,journalist,https://telegraph.co.uk,United preparing massive Vinícius bid
+Pedri González,AM,20-24,Spain,Barcelona,Manchester City,Premier League,100.0,300.0,5.0,Simon Stone,journalist,https://bbc.co.uk/sport,City interested in Barcelona midfielder
+Victor Osimhen,ST,25-29,Nigeria,Napoli,Arsenal,Premier League,90.0,250.0,2.0,Gianluca Di Marzio,journalist,https://gianlucadimarzio.com,Arsenal submit opening bid for Osimhen
+Declan Rice,DM,25-29,England,West Ham United,Chelsea,Premier League,80.0,200.0,1.0,Sky Sports News,outlet,https://skysports.com,Chelsea considering Rice move
+Mason Mount,AM,25-29,England,Chelsea,Tottenham,Premier League,70.0,180.0,1.0,ESPN FC,outlet,https://espn.com,Tottenham monitoring Mount contract talks
+Rafael Leão,LW,20-24,Portugal,AC Milan,Newcastle,Premier League,85.0,220.0,2.5,The Sun,outlet,https://thesun.co.uk,Newcastle preparing club record bid
+Bukayo Saka,RW,20-24,England,Arsenal,Bayern Munich,Bundesliga,110.0,280.0,3.0,Mirror Football,outlet,https://mirror.co.uk,Bayern plotting Saka raid
+Khvicha Kvaratskhelia,LW,20-24,Georgia,Napoli,Liverpool,Premier League,75.0,160.0,3.5,Transfer Aggregator,aggregator,https://example.com,Liverpool scouts watching Kvaratskhelia
+Enzo Fernández,CM,20-24,Argentina,Chelsea,Real Madrid,La Liga,95.0,240.0,6.0,Manchester United Official,club,https://manutd.com,United deny Fernández interest
+Jamal Musiala,AM,20-24,Germany,Bayern Munich,Manchester City,Premier League,90.0,200.0,2.5,Real Madrid Official,club,https://realmadrid.com,Madrid monitoring Musiala contract
+Alessandro Bastoni,CB,20-24,Italy,Inter Milan,Tottenham,Premier League,65.0,140.0,2.0,Barcelona Official,club,https://fcbarcelona.com,Barcelona consider Bastoni move
+João Félix,AM,20-24,Portugal,Atlético Madrid,AC Milan,Serie A,80.0,180.0,3.0,Fabrizio Romano,journalist,https://twitter.com/FabrizioRomano,Milan in talks with Atlético for Félix

@@ -1,0 +1,402 @@
+{% extends "base.html" %}
+
+{% block title %}{{ source.name }} - Source Profile - TransferRank{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Leaderboard</a></li>
+            <li class="breadcrumb-item active">{{ source.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Source Header -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center">
+                                <div class="source-icon me-4">
+                                    {% if source.type == 'journalist' %}
+                                        <i class="fas fa-user-tie fa-4x text-primary"></i>
+                                    {% elif source.type == 'club' %}
+                                        <i class="fas fa-shield-alt fa-4x text-success"></i>
+                                    {% elif source.type == 'outlet' %}
+                                        <i class="fas fa-newspaper fa-4x text-info"></i>
+                                    {% else %}
+                                        <i class="fas fa-rss fa-4x text-warning"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h1 class="mb-2">{{ source.name }}</h1>
+                                    <div class="source-details">
+                                        <span class="badge bg-primary me-2">{{ source.type.title() }}</span>
+                                        <span class="badge badge-source-{{ source.reputation_tag }} me-2">
+                                            {{ source.reputation_tag.title() }}
+                                        </span>
+                                    </div>
+                                    {% if source.url %}
+                                        <p class="text-muted mt-2 mb-0">
+                                            <i class="fas fa-link me-1"></i>
+                                            <a href="{{ source.url }}" target="_blank" class="text-decoration-none">
+                                                {{ source.url | truncate(50) }}
+                                            </a>
+                                        </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="source-score">
+                                <div class="credibility-circle">
+                                    <span class="score-value">{{ "%.0f"|format(source.avg_credibility) }}</span>
+                                    <small class="score-label">Credibility</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Source Statistics -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Performance Statistics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <h3 class="text-primary">{{ "%.0f"|format(source.avg_credibility) }}%</h3>
+                                <p class="text-muted mb-0">Average Credibility</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <h3 class="text-success">{{ "%.0f"|format(source.hit_rate * 100) }}%</h3>
+                                <p class="text-muted mb-0">Hit Rate</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <h3 class="text-info">{{ rumours|length }}</h3>
+                                <p class="text-muted mb-0">Total Rumours</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <h3 class="text-warning">{{ recent_rumours }}</h3>
+                                <p class="text-muted mb-0">Last 30 Days</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Credibility Trend Chart -->
+                    <hr>
+                    <div class="mt-4">
+                        <h6>Credibility Trend</h6>
+                        <canvas id="credibilityChart" width="100%" height="60"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Source Rumours -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-newspaper me-2"></i>Recent Rumours
+                    </h5>
+                    <span class="badge bg-primary">{{ rumours|length }} total</span>
+                </div>
+                
+                <div class="card-body p-0">
+                    {% if rumours %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Player</th>
+                                        <th>Transfer</th>
+                                        <th class="text-center">TransferRank</th>
+                                        <th class="text-center">Fee</th>
+                                        <th class="text-center">Date</th>
+                                        <th class="text-center">User Rating</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rumour in rumours[:10] %}
+                                        {% set score = rumour.scores[-1] if rumour.scores else none %}
+                                        <tr onclick="window.location='{{ url_for('rumour_detail', id=rumour.id) }}'" 
+                                            style="cursor: pointer;">
+                                            <td>
+                                                <div>
+                                                    <span class="fw-semibold">{{ rumour.player.name }}</span>
+                                                    <span class="badge bg-secondary ms-1">{{ rumour.position }}</span>
+                                                </div>
+                                                <small class="text-muted">{{ rumour.player.current_club }}</small>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <span class="fw-semibold">{{ rumour.from_club }}</span>
+                                                    <i class="fas fa-arrow-right mx-1 text-success"></i>
+                                                    <span class="fw-semibold text-info">{{ rumour.to_club }}</span>
+                                                </div>
+                                                <small class="text-muted">{{ rumour.league }}</small>
+                                            </td>
+                                            <td class="text-center">
+                                                {% if score %}
+                                                    <div class="score-badge score-overall">
+                                                        {{ "%.1f"|format(score.overall) }}
+                                                    </div>
+                                                {% else %}
+                                                    <span class="text-muted">—</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if rumour.reported_fee %}
+                                                    <span class="fw-semibold">€{{ "%.0f"|format(rumour.reported_fee) }}M</span>
+                                                {% else %}
+                                                    <span class="text-muted">Undisclosed</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                <small>{{ rumour.first_seen_date.strftime('%b %d, %Y') }}</small>
+                                            </td>
+                                            <td class="text-center">
+                                                {% if rumour.user_rating_count > 0 %}
+                                                    <div class="star-rating readonly" data-rating="{{ rumour.average_user_rating }}">
+                                                        {% for i in range(1, 6) %}
+                                                            <i class="fas fa-star {% if i <= rumour.average_user_rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                                        {% endfor %}
+                                                    </div>
+                                                    <small class="text-muted d-block">{{ rumour.user_rating_count }}</small>
+                                                {% else %}
+                                                    <span class="text-muted">—</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        {% if rumours|length > 10 %}
+                            <div class="card-footer text-center">
+                                <a href="{{ url_for('index', source_type=source.type) }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i>View All {{ rumours|length }} Rumours
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+                            <h5>No Rumours Found</h5>
+                            <p class="text-muted">This source hasn't reported any transfer rumours yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Source Details -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Source Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-5">Type:</dt>
+                        <dd class="col-sm-7">{{ source.type.title() }}</dd>
+                        
+                        <dt class="col-sm-5">Reputation:</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge badge-source-{{ source.reputation_tag }}">
+                                {{ source.reputation_tag.title() }}
+                            </span>
+                        </dd>
+                        
+                        <dt class="col-sm-5">Credibility:</dt>
+                        <dd class="col-sm-7">{{ "%.1f"|format(source.avg_credibility) }}%</dd>
+                        
+                        <dt class="col-sm-5">Hit Rate:</dt>
+                        <dd class="col-sm-7">{{ "%.1f"|format(source.hit_rate * 100) }}%</dd>
+                        
+                        {% if source.url %}
+                            <dt class="col-sm-5">Website:</dt>
+                            <dd class="col-sm-7">
+                                <a href="{{ source.url }}" target="_blank" class="text-decoration-none">
+                                    <i class="fas fa-external-link-alt me-1"></i>Visit
+                                </a>
+                            </dd>
+                        {% endif %}
+                        
+                        <dt class="col-sm-5">Added:</dt>
+                        <dd class="col-sm-7">{{ source.created_at.strftime('%B %d, %Y') }}</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Reputation Analysis -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-star me-2"></i>Reputation Analysis
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="reputation-breakdown">
+                        {% if source.reputation_tag == 'trusted' %}
+                            <div class="alert alert-success" role="alert">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <strong>Trusted Source</strong><br>
+                                This source has a proven track record of accurate transfer reporting and is considered highly reliable.
+                            </div>
+                        {% elif source.reputation_tag == 'neutral' %}
+                            <div class="alert alert-warning" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Neutral Source</strong><br>
+                                This source has mixed reliability. Reports should be taken with caution and verified with other sources.
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger" role="alert">
+                                <i class="fas fa-times-circle me-2"></i>
+                                <strong>Unreliable Source</strong><br>
+                                This source has a poor track record and reports are often inaccurate. Exercise extreme caution.
+                            </div>
+                        {% endif %}
+                        
+                        <div class="mt-3">
+                            <h6>Source Type Characteristics:</h6>
+                            {% if source.type == 'journalist' %}
+                                <p class="text-muted small">
+                                    Individual journalists often have specific club connections and breaking news capabilities.
+                                </p>
+                            {% elif source.type == 'club' %}
+                                <p class="text-muted small">
+                                    Official club sources are the most reliable for confirmed transfers but rarely report rumours.
+                                </p>
+                            {% elif source.type == 'outlet' %}
+                                <p class="text-muted small">
+                                    News outlets aggregate information from various sources with varying levels of verification.
+                                </p>
+                            {% else %}
+                                <p class="text-muted small">
+                                    Aggregators collect rumours from multiple sources and may have lower reliability standards.
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tools me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if source.url %}
+                            <a href="{{ source.url }}" target="_blank" class="btn btn-primary">
+                                <i class="fas fa-external-link-alt me-1"></i>Visit Source
+                            </a>
+                        {% endif %}
+                        <a href="{{ url_for('index') }}?source_type={{ source.type }}" class="btn btn-outline-info">
+                            <i class="fas fa-filter me-1"></i>Filter by {{ source.type.title() }}
+                        </a>
+                        <a href="{{ url_for('add_rumour') }}?source={{ source.name }}" class="btn btn-outline-success">
+                            <i class="fas fa-plus me-1"></i>Add Rumour from Source
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Initialize credibility trend chart
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('credibilityChart').getContext('2d');
+    
+    // Generate sample trend data (in a real app, this would come from historical data)
+    const generateTrendData = (baseValue) => {
+        const data = [];
+        const labels = [];
+        for (let i = 29; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            
+            // Add some realistic variation around the base value
+            const variation = (Math.random() - 0.5) * 10;
+            data.push(Math.max(0, Math.min(100, baseValue + variation)));
+        }
+        return { labels, data };
+    };
+    
+    const trendData = generateTrendData({{ source.avg_credibility }});
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: trendData.labels,
+            datasets: [{
+                label: 'Credibility Score',
+                data: trendData.data,
+                borderColor: 'var(--bs-primary)',
+                backgroundColor: 'var(--bs-primary)',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.4,
+                pointRadius: 1,
+                pointHoverRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: 'var(--bs-body-color)'
+                    }
+                },
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: 'var(--bs-body-color)',
+                        maxTicksLimit: 8
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

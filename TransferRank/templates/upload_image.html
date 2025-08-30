@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Image - {{ model_instance.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-upload me-2"></i>
+                        Upload Image for {{ model_instance.name }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if model_type == 'player' and model_instance.image_url %}
+                        <div class="text-center mb-3">
+                            <img src="{{ model_instance.image_url }}" 
+                                 alt="{{ model_instance.name }}" 
+                                 class="img-thumbnail" 
+                                 style="max-width: 200px;">
+                            <p class="text-muted mt-2">Current image</p>
+                        </div>
+                    {% elif model_type == 'source' and model_instance.logo_url %}
+                        <div class="text-center mb-3">
+                            <img src="{{ model_instance.logo_url }}" 
+                                 alt="{{ model_instance.name }}" 
+                                 class="img-thumbnail" 
+                                 style="max-width: 200px;">
+                            <p class="text-muted mt-2">Current logo</p>
+                        </div>
+                    {% endif %}
+
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="file" class="form-label">
+                                Choose {{ 'player photo' if model_type == 'player' else 'source logo' }}
+                            </label>
+                            <input type="file" 
+                                   class="form-control" 
+                                   id="file" 
+                                   name="file" 
+                                   accept=".png,.jpg,.jpeg,.gif,.webp"
+                                   required>
+                            <div class="form-text">
+                                Supported formats: PNG, JPG, JPEG, GIF, WebP. Max size: 5MB.
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload me-1"></i>
+                                Upload Image
+                            </button>
+                            <a href="{{ url_for('leaderboard') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Back to Leaderboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

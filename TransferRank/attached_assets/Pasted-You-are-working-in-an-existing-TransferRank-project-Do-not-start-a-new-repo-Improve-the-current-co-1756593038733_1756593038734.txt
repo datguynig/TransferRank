@@ -1,0 +1,201 @@
+You are working in an existing TransferRank project. Do not start a new repo. Improve the current codebase end to end with the tasks below. Make reasonable decisions and ship. Use British English in all copy. Avoid hyphens in UI copy. Do not use the sentence pattern “isn’t just X, it’s Y.”
+
+GOALS
+
+Clean, modern UI with a consistent colour system, spacing, and typography.
+
+Friendly, confident voice with personality in headings, helper text, and empty states.
+
+Images reliably render for players, sources, and contributors with graceful fallbacks.
+
+Admin dashboard login works in development and production.
+
+Monetisation becomes clearly valuable and non-interruptive, with soft nudges and helpful upgrades.
+
+Performance, accessibility, and QA improved with tests.
+
+A. DESIGN SYSTEM UPLIFT
+
+Tailwind theme: define tokens in tailwind.config for colours, spacing, radii, shadows, and typography.
+
+Base background: slate-50, surfaces: white.
+
+Text: slate-900 primary, slate-600 secondary.
+
+Primary: indigo-600, hover indigo-700.
+
+Accent: emerald-500 for positive, amber-500 for warning, rose-500 for negative.
+
+Muted: slate-100 surfaces for cards and tables.
+
+Replace any inline colours with classes using the tokens. Remove clashing gradients.
+
+Typography: set a clear type scale and apply consistently to H1, H2, body, small.
+
+Components: refactor to shared components in frontend/src/components/ui: Button, Card, Input, Select, Badge, Table, Tabs, Modal, Tooltip, Alert, Skeleton.
+
+Add subtle motion with Framer Motion for page transitions and modals. Keep durations under 200ms.
+
+Introduce loading skeletons for leaderboard rows, player page panels, and charts.
+
+Improve empty states with icons and copy, and include primary actions.
+
+B. VOICE AND COPY REFRESH
+
+Create frontend/src/copy.ts and move strings there. Tone: helpful, a bit cheeky, never shouty. British English. No hyphens.
+
+Add microcopy for tooltips on credibility, fit, value, and momentum.
+
+Improve first-run tour to explain how scoring works and how to use filters.
+
+Add friendly validation messages for CSV import and forms.
+
+C. IMAGE RELIABILITY
+
+Build an <SmartImage> component that:
+
+Accepts src, alt, fallback props.
+
+On error, swaps to a deterministic avatar based on name initials via a local SVG generator.
+
+Supports loading="lazy", width and height attributes to prevent layout shift.
+
+Use <SmartImage> for player photos, source logos, and contributor avatars.
+
+If a source has a URL, attempt /favicon.ico with a short fetch and CORS-safe proxy route /api/media/favicon?url=.... If it fails, fall back to the local SVG avatar.
+
+Add seed assets under frontend/public/seed/ for a handful of marquee players and outlets so the demo looks great offline.
+
+D. ADMIN AUTH BUGFIX
+
+Implement a simple stateless login flow.
+
+Backend: add POST /api/auth/login that accepts { password }. Compare to ADMIN_PASSWORD env. On success return a signed JWT with a short claim set. Use an AUTH_SECRET env for signing.
+
+Add FastAPI dependency to require and validate the JWT for admin routes.
+
+CORS: enable credentials and set allowed headers.
+
+Frontend:
+
+Admin Login page stores the JWT in memory with React Query and localStorage.
+
+Attach Authorization: Bearer <token> to admin requests.
+
+Show a clear banner on admin pages if ADMIN_PASSWORD is the default admin.
+
+Update .env.example with ADMIN_PASSWORD=admin, AUTH_SECRET=devsecret, and dev DATABASE_URL.
+
+Add tests: one backend test for successful and failed login, one for protected route access.
+
+E. MONETISATION REWORK TO VALUE-LED UPSells
+
+Remove intrusive popups. Replace with contextual upgrade panels that do not block usage.
+
+Introduce a simple free plan and a Plus plan (mocked).
+
+Free: full leaderboard, basic filters, view breakdowns.
+
+Plus (value adds): save filter sets, email alerts for tracked players, export CSV from any table, access advanced analytics panel that shows trend charts and source reliability over time.
+
+Add an “Upgrade” sidebar card that previews Plus benefits and shows a sample chart with seed data. CTA: “Try Plus” opens a modal with a mock checkout and success state.
+
+Gate advanced filters and export behind Plus with in-line nudges that explain the benefit and offer a temporary preview.
+
+Add a value page at /pricing with a clear comparison table and FAQ.
+
+Keep the app fully usable offline with mocked checkout confirmation and an isPlus flag saved locally.
+
+F. UX POLISH AND BUG FIXES
+
+Leaderboard
+
+Improve column spacing, sticky header, and responsive behaviour on mobile.
+
+Add client-side search debounce and keep query state in the URL.
+
+Momentum sparkline gets clear axes labels on hover.
+
+Player page
+
+Add hero with name, position, age band, club, and a tidy stat strip.
+
+Show recent rumour activity with tags for trusted, neutral, unreliable.
+
+Rumour detail
+
+Add an “Explain my score” panel that lists each factor and its contribution, plus the active weight set.
+
+Source page
+
+Show logo or fallback, average credibility, hit rate, last ten outcomes, and a small trend chart.
+
+CSV import
+
+Strong validation. Show a results summary with counts, a table of failed rows with reasons, and a “Download errors” CSV.
+
+Keyboard and a11y
+
+Ensure focus rings, skip links, semantic headings, alt text.
+
+All interactive controls have accessible names.
+
+Performance
+
+Add React lazy loading for route chunks.
+
+Add image dimensions and loading="lazy".
+
+Run a Lighthouse check and fix obvious issues.
+
+SEO and sharing
+
+Set document titles per route.
+
+Add Open Graph tags to index with defaults for sharing leaderboard and rumours.
+
+Error boundaries
+
+Global error boundary and per-route boundaries with helpful recovery actions.
+
+G. TESTS AND QUALITY
+
+Backend pytest: scoring functions, auth flow, CSV import validator.
+
+Frontend Vitest: leaderboard filter logic, SmartImage fallback, auth guard for admin routes.
+
+Add pre-commit hooks for Ruff/Black and Prettier.
+
+Update README with screenshots, revised run instructions, and a short style guide.
+
+H. DELIVERY
+
+Implement all changes directly in the existing files and commit.
+
+Provide a brief CHANGELOG.md summarising the improvements and where to look in the code.
+
+Ensure npm run dev starts both servers.
+
+Verify acceptance checks below and report results in the console output.
+
+ACCEPTANCE CHECKS
+
+Colours, spacing, and type are consistent. No clashing backgrounds or unreadable contrast.
+
+Copy feels human and confident. First-run tour explains TransferRank clearly.
+
+Images render for players, sources, and contributors. Broken images fall back to initials avatars.
+
+Admin login works with ADMIN_PASSWORD=admin and a visible warning banner. Protected endpoints reject unauthorised requests.
+
+Monetisation is helpful, never blocks workflow, and clearly communicates Plus benefits with a working mocked upgrade.
+
+CSV import shows success and failure summaries with downloadable error rows.
+
+Leaderboard, Player, Rumour, and Source pages pass basic a11y checks and look good on mobile.
+
+Tests pass with npm run test at the root.
+
+README and CHANGELOG updated.
+
+Make these changes now.

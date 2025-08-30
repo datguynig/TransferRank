@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel - TransferRank{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% if not session.admin_authenticated %}
+        <!-- Authentication Form -->
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h4><i class="fas fa-lock me-2"></i>Admin Authentication</h4>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST">
+                            {{ auth_form.hidden_tag() }}
+                            <div class="mb-3">
+                                {{ auth_form.admin_password.label(class="form-label") }}
+                                {{ auth_form.admin_password(class="form-control", type="password") }}
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-sign-in-alt me-1"></i>Login
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Admin Panel -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-cogs me-2"></i>Admin Panel</h1>
+            <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-sign-out-alt me-1"></i>Logout
+            </a>
+        </div>
+
+        {% if using_default_password %}
+            <div class="alert alert-warning" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Security Warning:</strong> You are using the default admin password. 
+                Please set the ADMIN_PASSWORD environment variable to a secure password.
+            </div>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Scoring Weights -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-balance-scale me-2"></i>Scoring Weights
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST">
+                            {{ weights_form.hidden_tag() }}
+                            <input type="hidden" name="update_weights" value="1">
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ weights_form.credibility.label(class="form-label") }}
+                                        <div class="input-group">
+                                            {{ weights_form.credibility(class="form-control weight-slider", type="range", min="0", max="1", step="0.01") }}
+                                            <span class="input-group-text weight-value">{{ "%.2f"|format(weights_form.credibility.data or 0) }}</span>
+                                        </div>
+                                        <small class="text-muted">Source reliability and corroboration</small>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        {{ weights_form.fit.label(class="form-label") }}
+                                        <div class="input-group">
+                                            {{ weights_form.fit(class="form-control weight-slider", type="range", min="0", max="1", step="0.01") }}
+                                            <span class="input-group-text weight-value">{{ "%.2f"|format(weights_form.fit.data or 0) }}</span>
+                                        </div>
+                                        <small class="text-muted">How well the player fits club needs</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ weights_form.value.label(class="form-label") }}
+                                        <div class="input-group">
+                                            {{ weights_form.value(class="form-control weight-slider", type="range", min="0", max="1", step="0.01") }}
+                                            <span class="input-group-text weight-value">{{ "%.2f"|format(weights_form.value.data or 0) }}</span>
+                                        </div>
+                                        <small class="text-muted">Transfer fee vs estimated market value</small>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        {{ weights_form.momentum.label(class="form-label") }}
+                                        <div class="input-group">
+                                            {{ weights_form.momentum(class="form-control weight-slider", type="range", min="0", max="1", step="0.01") }}
+                                            <span class="input-group-text weight-value">{{ "%.2f"|format(weights_form.momentum.data or 0) }}</span>
+                                        </div>
+                                        <small class="text-muted">Recent activity and multiple sources</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info" role="alert">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Total Weight:</strong> <span id="totalWeight">{{ "%.2f"|format((weights_form.credibility.data or 0) + (weights_form.fit.data or 0) + (weights_form.value.data or 0) + (weights_form.momentum.data or 0)) }}</span>
+                                <small class="text-muted">(should equal 1.00)</small>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Update Weights
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Live News Sources -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-satellite-dish me-2"></i>Live News Sources
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">Manually trigger news ingestion from external sources.</p>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="d-grid">
+                                    <button type="button" class="btn btn-primary" onclick="ingestBBC()">
+                                        <i class="fas fa-rss me-2"></i>Ingest BBC Sport
+                                    </button>
+                                </div>
+                                <small class="text-muted mt-1 d-block">Fetch latest transfer news from BBC Sport RSS</small>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-grid">
+                                    <button type="button" class="btn btn-success" onclick="ingestGuardian()">
+                                        <i class="fas fa-newspaper me-2"></i>Ingest Guardian
+                                    </button>
+                                </div>
+                                <small class="text-muted mt-1 d-block">Fetch transfer stories from Guardian API</small>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="d-grid">
+                            <button type="button" class="btn btn-outline-primary" onclick="ingestAll()">
+                                <i class="fas fa-sync me-2"></i>Run All Sources
+                            </button>
+                        </div>
+                        
+                        <!-- Ingest Results -->
+                        <div id="ingest-results" class="mt-3" style="display: none;">
+                            <div class="alert alert-info mb-0">
+                                <div id="ingest-message"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Source Reputation Management -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-star me-2"></i>Source Reputation Management
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Source</th>
+                                        <th>Type</th>
+                                        <th>Current Reputation</th>
+                                        <th>Credibility</th>
+                                        <th>Hit Rate</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for source in sources %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ source.name }}</strong>
+                                                {% if source.url %}
+                                                    <br><small class="text-muted">{{ source.url | truncate(40) }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ source.type.title() }}</td>
+                                            <td>
+                                                <span class="badge badge-source-{{ source.reputation_tag }}">
+                                                    {{ source.reputation_tag.title() }}
+                                                </span>
+                                            </td>
+                                            <td>{{ "%.1f"|format(source.avg_credibility) }}%</td>
+                                            <td>{{ "%.1f"|format(source.hit_rate * 100) }}%</td>
+                                            <td>
+                                                <form method="POST" class="d-inline">
+                                                    {{ reputation_form.hidden_tag() }}
+                                                    <input type="hidden" name="update_reputation" value="1">
+                                                    <input type="hidden" name="source_id" value="{{ source.id }}">
+                                                    <select name="reputation_tag" class="form-select form-select-sm" 
+                                                            onchange="this.form.submit()" style="width: auto;">
+                                                        <option value="trusted" {% if source.reputation_tag == 'trusted' %}selected{% endif %}>Trusted</option>
+                                                        <option value="neutral" {% if source.reputation_tag == 'neutral' %}selected{% endif %}>Neutral</option>
+                                                        <option value="unreliable" {% if source.reputation_tag == 'unreliable' %}selected{% endif %}>Unreliable</option>
+                                                    </select>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <!-- Quick Actions -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-tools me-2"></i>Quick Actions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <form method="POST" class="d-inline">
+                                <input type="hidden" name="recompute_scores" value="1">
+                                <button type="submit" class="btn btn-warning w-100" 
+                                        onclick="return confirm('This will recalculate all rumour scores. Continue?')">
+                                    <i class="fas fa-calculator me-1"></i>Recompute All Scores
+                                </button>
+                            </form>
+                            
+                            <a href="{{ url_for('upload_csv') }}" class="btn btn-outline-info">
+                                <i class="fas fa-upload me-1"></i>Import CSV Data
+                            </a>
+                            
+                            <a href="{{ url_for('add_rumour') }}" class="btn btn-outline-success">
+                                <i class="fas fa-plus me-1"></i>Add New Rumour
+                            </a>
+                            
+                            <a href="/data/rumours_template.csv" class="btn btn-outline-secondary" download>
+                                <i class="fas fa-download me-1"></i>Download CSV Template
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Status -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-server me-2"></i>System Status
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="status-item mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Total Rumours:</span>
+                                <strong class="text-primary">{{ sources | map(attribute='rumours') | map('length') | sum }}</strong>
+                            </div>
+                        </div>
+                        <div class="status-item mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Total Sources:</span>
+                                <strong class="text-info">{{ sources | length }}</strong>
+                            </div>
+                        </div>
+                        <div class="status-item mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Trusted Sources:</span>
+                                <strong class="text-success">{{ sources | selectattr('reputation_tag', 'equalto', 'trusted') | list | length }}</strong>
+                            </div>
+                        </div>
+                        <div class="status-item">
+                            <div class="d-flex justify-content-between">
+                                <span>Unreliable Sources:</span>
+                                <strong class="text-danger">{{ sources | selectattr('reputation_tag', 'equalto', 'unreliable') | list | length }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Changes Log -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-history me-2"></i>Recent Changes
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <small class="text-muted">Just now</small>
+                                <p class="mb-1">Admin panel accessed</p>
+                            </div>
+                            <div class="timeline-item">
+                                <small class="text-muted">System startup</small>
+                                <p class="mb-1">Database seeded with initial data</p>
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Full audit logging coming soon
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Weight slider functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const sliders = document.querySelectorAll('.weight-slider');
+    
+    sliders.forEach(slider => {
+        const valueDisplay = slider.parentElement.querySelector('.weight-value');
+        
+        slider.addEventListener('input', function() {
+            valueDisplay.textContent = parseFloat(this.value).toFixed(2);
+            updateTotalWeight();
+        });
+    });
+    
+    function updateTotalWeight() {
+        const total = Array.from(sliders).reduce((sum, slider) => {
+            return sum + parseFloat(slider.value);
+        }, 0);
+        
+        const totalElement = document.getElementById('totalWeight');
+        totalElement.textContent = total.toFixed(2);
+        
+        // Color coding for total weight
+        if (Math.abs(total - 1.0) < 0.01) {
+            totalElement.className = 'text-success fw-bold';
+        } else {
+            totalElement.className = 'text-danger fw-bold';
+        }
+    }
+    
+    // Initial calculation
+    updateTotalWeight();
+});
+
+// News ingestion functions
+async function ingestBBC() {
+    await performIngest('/api/ingest/bbc', 'BBC Sport');
+}
+
+async function ingestGuardian() {
+    await performIngest('/api/ingest/guardian', 'Guardian');
+}
+
+async function ingestAll() {
+    await performIngest('/api/ingest/run-all', 'All Sources');
+}
+
+async function performIngest(endpoint, sourceName) {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    // Show loading state
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading...';
+    button.disabled = true;
+    
+    try {
+        // Get admin token
+        const token = localStorage.getItem('admin_token');
+        if (!token) {
+            showIngestResult('Error: Admin token not found. Please login again.', 'danger');
+            return;
+        }
+        
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const message = `${sourceName}: ${data.added} added, ${data.skipped} skipped`;
+            showIngestResult(message, 'success');
+            
+            // Refresh page after successful ingest to show new rumours
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            showIngestResult(`${sourceName}: ${data.error || 'Unknown error'}`, 'danger');
+        }
+        
+    } catch (error) {
+        showIngestResult(`${sourceName}: Network error - ${error.message}`, 'danger');
+    } finally {
+        // Restore button
+        button.innerHTML = originalText;
+        button.disabled = false;
+    }
+}
+
+function showIngestResult(message, type) {
+    const resultsDiv = document.getElementById('ingest-results');
+    const messageDiv = document.getElementById('ingest-message');
+    
+    resultsDiv.style.display = 'block';
+    resultsDiv.querySelector('.alert').className = `alert alert-${type} mb-0`;
+    messageDiv.textContent = message;
+    
+    // Auto hide success messages
+    if (type === 'success') {
+        setTimeout(() => {
+            resultsDiv.style.display = 'none';
+        }, 5000);
+    }
+}
+</script>
+{% endblock %}

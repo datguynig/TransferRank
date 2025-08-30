@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+
+{% block title %}TransferRank - Live Transfer Rumour Leaderboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h1 class="display-6 mb-2">
+                <i class="fas fa-trophy text-warning me-2"></i>Transfer Rumour Leaderboard
+            </h1>
+            <p class="lead text-muted">
+                Live rankings of football transfer rumours scored for credibility, fit, value, and momentum.
+            </p>
+        </div>
+        <div class="col-lg-4 text-end">
+            <div class="d-flex flex-column align-items-end">
+                <div class="mb-2">
+                    <span class="badge bg-info fs-6">{{ rumours.total }} Total Rumours</span>
+                </div>
+                <div class="btn-group" role="group">
+                    <a href="{{ url_for('add_rumour') }}" class="btn btn-success">
+                        <i class="fas fa-plus me-1"></i>Add Rumour
+                    </a>
+                    <a href="{{ url_for('upload_csv') }}" class="btn btn-outline-info">
+                        <i class="fas fa-upload me-1"></i>Upload CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label for="search" class="form-label">Search</label>
+                    <input type="text" class="form-control" id="search" name="search" 
+                           value="{{ current_filters.search }}" placeholder="Player, club...">
+                </div>
+                <div class="col-md-2">
+                    <label for="league" class="form-label">League</label>
+                    <select class="form-select" id="league" name="league">
+                        <option value="">All Leagues</option>
+                        {% for league in leagues %}
+                            <option value="{{ league }}" {% if current_filters.league == league %}selected{% endif %}>
+                                {{ league }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="position" class="form-label">Position</label>
+                    <select class="form-select" id="position" name="position">
+                        <option value="">All Positions</option>
+                        {% for position in positions %}
+                            <option value="{{ position }}" {% if current_filters.position == position %}selected{% endif %}>
+                                {{ position }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="source_type" class="form-label">Source Type</label>
+                    <select class="form-select" id="source_type" name="source_type">
+                        <option value="">All Sources</option>
+                        {% for source_type in source_types %}
+                            <option value="{{ source_type }}" {% if current_filters.source_type == source_type %}selected{% endif %}>
+                                {{ source_type.title() }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Fee Range (€M)</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" name="min_fee" 
+                               value="{{ current_filters.min_fee }}" placeholder="Min" min="0" step="0.1">
+                        <span class="input-group-text">to</span>
+                        <input type="number" class="form-control" name="max_fee" 
+                               value="{{ current_filters.max_fee }}" placeholder="Max" min="0" step="0.1">
+                    </div>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search me-1"></i>Filter
+                    </button>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i>Clear
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-list me-2"></i>Rumours 
+                <span class="text-muted">(Page {{ rumours.page }} of {{ rumours.pages }})</span>
+            </h5>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                        data-bs-toggle="dropdown">
+                    <i class="fas fa-sort me-1"></i>Sort
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="?{{ request.query_string.decode() }}&sort_by=overall&order=desc">
+                        TransferRank (High to Low)</a></li>
+                    <li><a class="dropdown-item" href="?{{ request.query_string.decode() }}&sort_by=overall&order=asc">
+                        TransferRank (Low to High)</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="?{{ request.query_string.decode() }}&sort_by=credibility&order=desc">
+                        Credibility</a></li>
+                    <li><a class="dropdown-item" href="?{{ request.query_string.decode() }}&sort_by=fit&order=desc">
+                        Club Fit</a></li>
+                    <li><a class="dropdown-item" href="?{{ request.query_string.decode() }}&sort_by=value&order=desc">
+                        Value</a></li>
+                    <li><a class="dropdown-item" href="?{{ request.query_string.decode() }}&sort_by=momentum&order=desc">
+                        Momentum</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="?{{ request.query_string.decode() }}&sort_by=fee&order=desc">
+                        Transfer Fee</a></li>
+                    <li><a class="dropdown-item" href="?{{ request.query_string.decode() }}&sort_by=date&order=desc">
+                        Date (Newest)</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card-body p-0">
+            {% if rumours.items %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="text-center">Rank</th>
+                                <th>Player</th>
+                                <th>Transfer</th>
+                                <th class="text-center">TransferRank</th>
+                                <th class="text-center">Credibility</th>
+                                <th class="text-center">Fit</th>
+                                <th class="text-center">Value</th>
+                                <th class="text-center">Momentum</th>
+                                <th class="text-center">User Rating</th>
+                                <th class="text-center">Fee</th>
+                                <th>Source</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rumour in rumours.items %}
+                                {% set score = rumour.scores[-1] if rumour.scores else none %}
+                                <tr onclick="window.location='{{ url_for('rumour_detail', id=rumour.id) }}'" 
+                                    style="cursor: pointer;">
+                                    <td class="text-center">
+                                        <span class="badge bg-primary fs-6">
+                                            {{ loop.index + (rumours.page - 1) * rumours.per_page }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="player-avatar me-2">
+                                                <div class="player-initials">
+                                                    {% set name_parts = rumour.player.name.split() %}
+                                                    {{ name_parts[0][0] }}{% if name_parts|length > 1 %}{{ name_parts[-1][0] }}{% endif %}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">{{ rumour.player.name }}</div>
+                                                <small class="text-muted">{{ rumour.position }} • Age {{ rumour.player.age }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <span class="fw-semibold">{{ rumour.from_club }}</span>
+                                            <i class="fas fa-arrow-right mx-2 text-success"></i>
+                                            <span class="fw-semibold text-info">{{ rumour.to_club }}</span>
+                                        </div>
+                                        <small class="text-muted">{{ rumour.league }}</small>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if score %}
+                                            <div class="score-badge score-overall">
+                                                {{ "%.1f"|format(score.overall) }}
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if score %}
+                                            <div class="score-badge score-credibility">
+                                                {{ "%.0f"|format(score.credibility) }}
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if score %}
+                                            <div class="score-badge score-fit">
+                                                {{ "%.0f"|format(score.fit) }}
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if score %}
+                                            <div class="score-badge score-value">
+                                                {{ "%.0f"|format(score.value) }}
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if score %}
+                                            <div class="score-badge score-momentum">
+                                                {{ "%.0f"|format(score.momentum) }}
+                                            </div>
+                                            <canvas class="momentum-sparkline mt-1" 
+                                                    data-rumour-id="{{ rumour.id }}"
+                                                    width="60" height="20"
+                                                    role="img"
+                                                    aria-label="Momentum trend chart for {{ rumour.player.name }} transfer rumour"></canvas>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="rating-display" data-rumour-id="{{ rumour.id }}" role="region" aria-label="User ratings for {{ rumour.player.name }} transfer">
+                                            {% if rumour.user_rating_count > 0 %}
+                                                <div class="star-rating readonly" data-rating="{{ rumour.average_user_rating }}">
+                                                    {% for i in range(1, 6) %}
+                                                        <i class="fas fa-star {% if i <= rumour.average_user_rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                                    {% endfor %}
+                                                </div>
+                                                <small class="text-muted d-block">{{ rumour.user_rating_count }} ratings</small>
+                                            {% else %}
+                                                <span class="text-muted">No ratings</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if rumour.reported_fee %}
+                                            <span class="fw-semibold">€{{ "%.0f"|format(rumour.reported_fee) }}M</span>
+                                        {% else %}
+                                            <span class="text-muted">Undisclosed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="source-logo">
+                                                {{ rumour.source.name[0] }}
+                                            </div>
+                                            <div>
+                                                <div>
+                                                    <span class="fw-semibold">{{ rumour.source.name }}</span>
+                                                    <span class="badge badge-source-{{ rumour.source.reputation_tag }} ms-1">
+                                                        {{ rumour.source.reputation_tag.title() }}
+                                                    </span>
+                                                </div>
+                                                <small class="text-muted">{{ rumour.source.type.title() }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h5>No rumours found</h5>
+                    <p class="text-muted">Try adjusting your filters or <a href="{{ url_for('add_rumour') }}">add a new rumour</a>.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if rumours.pages > 1 %}
+            <div class="card-footer">
+                <nav>
+                    <ul class="pagination justify-content-center mb-0">
+                        {% if rumours.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{{ request.query_string.decode() }}&page={{ rumours.prev_num }}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for page_num in rumours.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != rumours.page %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?{{ request.query_string.decode() }}&page={{ page_num }}">
+                                            {{ page_num }}
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page_num }}</span>
+                                    </li>
+                                {% endif %}
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">…</span>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if rumours.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{{ request.query_string.decode() }}&page={{ rumours.next_num }}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Top 10 Widget Preview -->
+    <div class="row mt-5">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-crown text-warning me-2"></i>Top 10 Widget Preview
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <iframe src="{{ url_for('embed_top10') }}" 
+                            width="100%" height="400" 
+                            frameborder="0" class="rounded"></iframe>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Embed this widget on your website</small>
+                        <button class="btn btn-sm btn-outline-info" onclick="copyEmbedCode()">
+                            <i class="fas fa-copy me-1"></i>Copy Embed Code
+                        </button>
+                    </div>
+                    <textarea id="embedCode" class="form-control mt-2 d-none" rows="2" readonly>
+&lt;iframe src="{{ request.url_root }}embed/top10" width="100%" height="400" frameborder="0"&gt;&lt;/iframe&gt;
+                    </textarea>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Quick Stats
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="stat-item">
+                                <h3 class="text-primary">{{ rumours.total }}</h3>
+                                <p class="text-muted mb-0">Total Rumours</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-item">
+                                <h3 class="text-success">{{ leagues|length }}</h3>
+                                <p class="text-muted mb-0">Leagues Covered</p>
+                            </div>
+                        </div>
+                        <div class="col-6 mt-3">
+                            <div class="stat-item">
+                                <h3 class="text-info">{{ positions|length }}</h3>
+                                <p class="text-muted mb-0">Positions</p>
+                            </div>
+                        </div>
+                        <div class="col-6 mt-3">
+                            <div class="stat-item">
+                                <h3 class="text-warning">{{ source_types|length }}</h3>
+                                <p class="text-muted mb-0">Source Types</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyEmbedCode() {
+    const textarea = document.getElementById('embedCode');
+    textarea.classList.remove('d-none');
+    textarea.select();
+    document.execCommand('copy');
+    
+    // Show feedback
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check me-1"></i>Copied!';
+    button.classList.replace('btn-outline-info', 'btn-success');
+    
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.classList.replace('btn-success', 'btn-outline-info');
+        textarea.classList.add('d-none');
+    }, 2000);
+}
+
+// Show tour modal on first visit
+document.addEventListener('DOMContentLoaded', function() {
+    if (!localStorage.getItem('transferrank_tour_shown')) {
+        const tourModal = new bootstrap.Modal(document.getElementById('tourModal'));
+        tourModal.show();
+        localStorage.setItem('transferrank_tour_shown', 'true');
+    }
+    
+    // Initialize sparklines
+    initializeSparklines();
+});
+</script>
+{% endblock %}

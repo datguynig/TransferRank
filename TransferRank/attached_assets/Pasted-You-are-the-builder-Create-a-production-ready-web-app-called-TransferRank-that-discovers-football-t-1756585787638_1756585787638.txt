@@ -1,0 +1,166 @@
+You are the builder. Create a production ready web app called TransferRank that discovers football transfer rumours, scores them for credibility, club fit, and value, then ranks them by an overall TransferRank score. The app must run entirely on Replit with one repo and a single click run. Use a Python FastAPI backend, SQLite with SQLAlchemy, and a React Vite frontend with Tailwind for styling. Include clear seed data so the app works without external keys.
+
+Audience and goal
+Football fans, creators, and analysts who want a live board of ranked transfer rumours with transparent scoring and easy filters.
+
+Core features
+
+Rumour ingestion
+
+Manual form to add a rumour with: player, current club, target club, fee, contract years left, wage estimate, source name, source url, source type (journalist, club, outlet, aggregator), league, position, date first seen.
+
+CSV upload template for batch import. Validate and show friendly errors.
+
+Optional RSS puller for seed data. If no internet is available, skip gracefully and rely on seed fixtures.
+
+Scoring model
+
+Fields: credibility score, club fit score, value score, momentum score, and overall TransferRank score.
+
+Default weights: credibility 0.4, fit 0.3, value 0.2, momentum 0.1.
+
+Momentum is a function of recent sightings and distinct sources in the last seven days.
+
+Value score compares reported fee to an estimated fair value using position, age band, last season minutes, and contract time left. If these are missing, fall back to a baseline by position and age band.
+
+Store scores and the inputs used for audit.
+
+Admin controls
+
+Simple password gate (env var ADMIN_PASSWORD) for a small admin panel.
+
+Adjust weights with sliders and persist to DB.
+
+Mark sources as trusted, neutral, or unreliable. Trusted boosts credibility, unreliable reduces it.
+
+Explore view
+
+Leaderboard table with search and filters: league, position, player, source type, fee range, date range, credibility band.
+
+Sort by any column. Default sort is overall TransferRank descending.
+
+Each row shows a compact sparkline for momentum.
+
+Player page
+
+Player header with photo placeholder, position, age band, current club.
+
+List of active rumours for that player with per rumour score breakdown and source list.
+
+If no external API key is set, show mocked stats so the page still looks complete.
+
+Rumour detail page
+
+Score explanation card that shows exactly how the score was calculated, the weights in effect, and which inputs drove it.
+
+Source reputation
+
+Source profile page with history, average credibility, and hit rate fields. Seed sample values. Show a trend chart.
+
+Share and embed
+
+Shareable link for any rumour and any leaderboard filter state.
+
+Simple iframe embed snippet for a Top 10 widget.
+
+DX and docs
+
+One command to run. Hot reload for both backend and frontend.
+
+Clear README with setup, commands, and a CSV template in the repo.
+
+Type hints in Python, prop types in React. Prettier and Ruff or Black configured.
+
+Architecture
+
+Backend: FastAPI, SQLAlchemy, SQLite, Pydantic schemas, uvicorn server. CORS enabled for the frontend origin.
+
+Frontend: React with Vite, Tailwind, React Router. Use a light design system with cards, tabs, and tables. No heavy UI kit.
+
+State: React Query for data fetching and caching.
+
+Charts: Recharts for sparklines and simple trends.
+
+Database schema
+Create tables and seed data:
+
+players(id, name, position, age_band, current_club, nationality)
+
+sources(id, name, url, type, reputation_tag, avg_credibility, hit_rate)
+
+rumours(id, player_id, from_club, to_club, league, position, reported_fee, wage_estimate, contract_years_left, source_id, source_claim, source_url, first_seen_date, last_seen_date, sightings_count, distinct_sources_7d)
+
+scores(id, rumour_id, credibility, fit, value, momentum, overall, weights_json, calculated_at)
+
+settings(id, weights_json, updated_at)
+Seed at least 30 rumours across Premier League, La Liga, Serie A, Bundesliga, Ligue 1 with mixed credibility and sources.
+
+API endpoints
+
+GET /api/rumours with filter and sort query params
+
+POST /api/rumours to create one
+
+POST /api/rumours/import to upload CSV
+
+GET /api/rumours/{id}
+
+GET /api/players/{id}
+
+GET /api/sources/{id}
+
+GET /api/settings
+
+POST /api/settings to update weights
+
+POST /api/score/{rumour_id}/recompute
+All list endpoints support pagination.
+
+Scoring rules detail
+
+Credibility baseline by source.reputation_tag: trusted +15, neutral 0, unreliable minus 15, clamp to 0..100 after other adjustments.
+
+Extra boost if multiple independent sources within seven days, diminishing returns past five.
+
+Fit score uses position need by club and basic style tags. Seed a tiny lookup table per club for needs and style tags. If missing, use neutral 50 baseline.
+
+Value score uses a simple fair value estimator: start by position and age band, adjust for last season minutes, contract years left, and whether the player would be free in the next window.
+
+Overall is a weighted sum, round to one decimal.
+
+Frontend pages
+
+Home: leaderboard with filters, search, and Top 10 widget preview.
+
+Player: player info, rumours, and breakdowns.
+
+Rumour: full score explanation and source list.
+
+Source: reputation and trend.
+
+Admin: auth gate, weight sliders, button to recompute all scores, CSV importer, and a simple log of recent changes.
+
+CSV template
+Include a file at /data/rumours_template.csv with headers that match the create endpoint fields. Validate types and show which rows failed.
+
+Testing and quality
+
+Backend: pytest for the scoring functions and one endpoint test.
+
+Frontend: a basic test for the table render and filter logic with Vitest.
+
+Add a script to seed the DB with the sample dataset and to reset and reseed.
+
+Delivery checklist
+
+Running the Replit app opens the frontend at the default web URL and the API on the same origin path under /api via a Vite proxy.
+
+README includes set up, seed commands, and a table of routes.
+
+Admin password is read from ADMIN_PASSWORD env var with a default of admin in dev. Show a warning banner if the default is in use.
+
+No secrets required to run the demo.
+
+Provide a short guided tour modal on first load that explains the scores and filters.
+
+Build this now.

@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block title %}{{ player.name }} - Player Profile - TransferRank{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Leaderboard</a></li>
+            <li class="breadcrumb-item active">{{ player.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Player Header -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center">
+                                <div class="player-avatar me-4" style="width: 100px; height: 100px;">
+                                    <div class="player-initials" style="font-size: 2rem;">
+                                        {% set name_parts = player.name.split() %}
+                                        {{ name_parts[0][0] }}{% if name_parts|length > 1 %}{{ name_parts[-1][0] }}{% endif %}
+                                    </div>
+                                </div>
+                                <div>
+                                    <h1 class="mb-2">{{ player.name }}</h1>
+                                    <div class="player-details">
+                                        <span class="badge bg-primary me-2">{{ player.position }}</span>
+                                        <span class="badge bg-secondary me-2">Age {{ player.age }}</span>
+                                        <span class="badge bg-info me-2">{{ player.nationality }}</span>
+                                    </div>
+                                    <p class="text-muted mt-2 mb-0">
+                                        <i class="fas fa-shield-alt me-1"></i>{{ player.current_club }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="player-stats">
+                                <div class="stat-item">
+                                    <h3 class="text-primary">{{ rumours|length }}</h3>
+                                    <p class="text-muted mb-0">Active Rumours</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mock Player Stats (since no external API keys) -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Season Statistics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Player statistics would be displayed here with external API integration. 
+                        Currently showing placeholder to demonstrate layout.
+                    </div>
+                    
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <h4 class="text-success">--</h4>
+                                <p class="text-muted mb-0">Appearances</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <h4 class="text-warning">--</h4>
+                                <p class="text-muted mb-0">Goals</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <h4 class="text-info">--</h4>
+                                <p class="text-muted mb-0">Assists</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <h4 class="text-primary">--</h4>
+                                <p class="text-muted mb-0">Minutes</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transfer Rumours -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-newspaper me-2"></i>Transfer Rumours
+                    </h5>
+                    <span class="badge bg-primary">{{ rumours|length }} rumours</span>
+                </div>
+                
+                <div class="card-body p-0">
+                    {% if rumours %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Destination</th>
+                                        <th class="text-center">TransferRank</th>
+                                        <th class="text-center">Fee</th>
+                                        <th>Source</th>
+                                        <th class="text-center">Date</th>
+                                        <th class="text-center">User Rating</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rumour in rumours %}
+                                        {% set score = rumour.scores[-1] if rumour.scores else none %}
+                                        <tr onclick="window.location='{{ url_for('rumour_detail', id=rumour.id) }}'" 
+                                            style="cursor: pointer;">
+                                            <td>
+                                                <div>
+                                                    <span class="fw-semibold text-info">{{ rumour.to_club }}</span>
+                                                    <span class="badge bg-secondary ms-2">{{ rumour.league }}</span>
+                                                </div>
+                                                <small class="text-muted">{{ rumour.position }}</small>
+                                            </td>
+                                            <td class="text-center">
+                                                {% if score %}
+                                                    <div class="score-badge score-overall">
+                                                        {{ "%.1f"|format(score.overall) }}
+                                                    </div>
+                                                {% else %}
+                                                    <span class="text-muted">—</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if rumour.reported_fee %}
+                                                    <span class="fw-semibold">€{{ "%.0f"|format(rumour.reported_fee) }}M</span>
+                                                {% else %}
+                                                    <span class="text-muted">Undisclosed</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <span class="fw-semibold">{{ rumour.source.name }}</span>
+                                                    <span class="badge badge-source-{{ rumour.source.reputation_tag }} ms-1">
+                                                        {{ rumour.source.reputation_tag.title() }}
+                                                    </span>
+                                                </div>
+                                                <small class="text-muted">{{ rumour.source.type.title() }}</small>
+                                            </td>
+                                            <td class="text-center">
+                                                <small>{{ rumour.first_seen_date.strftime('%b %d') }}</small>
+                                            </td>
+                                            <td class="text-center">
+                                                {% if rumour.user_rating_count > 0 %}
+                                                    <div class="star-rating readonly" data-rating="{{ rumour.average_user_rating }}">
+                                                        {% for i in range(1, 6) %}
+                                                            <i class="fas fa-star {% if i <= rumour.average_user_rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                                        {% endfor %}
+                                                    </div>
+                                                    <small class="text-muted d-block">{{ rumour.user_rating_count }}</small>
+                                                {% else %}
+                                                    <span class="text-muted">—</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+                            <h5>No Transfer Rumours</h5>
+                            <p class="text-muted">No transfer rumours found for this player.</p>
+                            <a href="{{ url_for('add_rumour') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>Add Rumour
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tools me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('add_rumour') }}?player={{ player.name }}" class="btn btn-success">
+                            <i class="fas fa-plus me-1"></i>Add New Rumour
+                        </a>
+                        <a href="{{ url_for('index', search=player.current_club) }}" class="btn btn-outline-info">
+                            <i class="fas fa-search me-1"></i>{{ player.current_club }} Rumours
+                        </a>
+                        <a href="{{ url_for('index', position=player.position) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-filter me-1"></i>{{ player.position }} Transfers
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Player Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Player Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-6">Position:</dt>
+                        <dd class="col-sm-6">{{ player.position }}</dd>
+                        
+                        <dt class="col-sm-6">Age:</dt>
+                        <dd class="col-sm-6">{{ player.age }}</dd>
+                        
+                        <dt class="col-sm-6">Nationality:</dt>
+                        <dd class="col-sm-6">{{ player.nationality }}</dd>
+                        
+                        <dt class="col-sm-6">Current Club:</dt>
+                        <dd class="col-sm-6">{{ player.current_club }}</dd>
+                        
+                        <dt class="col-sm-6">Profile Created:</dt>
+                        <dd class="col-sm-6">{{ player.created_at.strftime('%B %d, %Y') }}</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Transfer History Summary -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>Rumour Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if rumours %}
+                        {% set avg_score = rumours | map(attribute='scores') | map('last') | map(attribute='overall') | list | avg %}
+                        {% set top_club = rumours | groupby('to_club') | list | sort(attribute='1') | reverse | first %}
+                        
+                        <div class="summary-stats">
+                            <div class="stat-item mb-3">
+                                <h6>Average TransferRank Score</h6>
+                                <div class="score-badge score-overall">
+                                    {{ "%.1f"|format(avg_score or 0) }}
+                                </div>
+                            </div>
+                            
+                            <div class="stat-item mb-3">
+                                <h6>Most Linked Club</h6>
+                                <p class="fw-semibold text-info mb-0">{{ top_club[0] if top_club else 'N/A' }}</p>
+                                {% if top_club %}
+                                    <small class="text-muted">{{ top_club[1]|length }} rumours</small>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="stat-item">
+                                <h6>Recent Activity</h6>
+                                {% set recent_rumour = rumours | selectattr('last_seen_date') | list | sort(attribute='last_seen_date', reverse=true) | first %}
+                                {% if recent_rumour %}
+                                    <p class="mb-0">{{ recent_rumour.last_seen_date.strftime('%B %d, %Y') }}</p>
+                                    <small class="text-muted">{{ recent_rumour.to_club }} link</small>
+                                {% else %}
+                                    <p class="text-muted mb-0">No recent activity</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No rumour data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Custom filters for Jinja templates
+function avg(values) {
+    if (values.length === 0) return 0;
+    return values.reduce((a, b) => a + b, 0) / values.length;
+}
+</script>
+{% endblock %}

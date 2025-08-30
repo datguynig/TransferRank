@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top 10 Transfer Rumours - TransferRank</title>
+    
+    <!-- Bootstrap CSS with Replit theme -->
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-size: 0.9rem;
+        }
+        .embed-header {
+            background: linear-gradient(135deg, var(--bs-primary), var(--bs-info));
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        .score-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-weight: bold;
+            font-size: 0.8rem;
+            min-width: 35px;
+            text-align: center;
+        }
+        .score-overall {
+            background-color: var(--bs-primary);
+            color: white;
+        }
+        .rumour-row {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--bs-border-color);
+            transition: background-color 0.2s;
+        }
+        .rumour-row:hover {
+            background-color: var(--bs-body-bg);
+        }
+        .rumour-row:last-child {
+            border-bottom: none;
+        }
+        .rank-badge {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.75rem;
+        }
+        .rank-1 { background-color: #FFD700; color: #000; }
+        .rank-2 { background-color: #C0C0C0; color: #000; }
+        .rank-3 { background-color: #CD7F32; color: #fff; }
+        .rank-other { background-color: var(--bs-secondary); color: white; }
+        .player-info {
+            line-height: 1.2;
+        }
+        .transfer-info {
+            font-size: 0.8rem;
+        }
+        .powered-by {
+            text-align: center;
+            padding: 0.5rem;
+            background-color: var(--bs-dark);
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <!-- Header -->
+        <div class="embed-header">
+            <h5 class="mb-1">
+                <i class="fas fa-trophy me-2"></i>Top 10 Transfer Rumours
+            </h5>
+            <small>Live rankings by TransferRank</small>
+        </div>
+        
+        <!-- Top 10 List -->
+        <div class="rumours-list">
+            {% for rumour in rumours %}
+                {% set score = rumour.scores[-1] if rumour.scores else none %}
+                <div class="rumour-row">
+                    <div class="d-flex align-items-center">
+                        <!-- Rank -->
+                        <div class="rank-badge {% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% else %}rank-other{% endif %} me-3">
+                            {{ loop.index }}
+                        </div>
+                        
+                        <!-- Player Info -->
+                        <div class="flex-grow-1">
+                            <div class="player-info">
+                                <div class="fw-bold">{{ rumour.player.name }}</div>
+                                <div class="transfer-info text-muted">
+                                    {{ rumour.from_club }} 
+                                    <i class="fas fa-arrow-right mx-1"></i> 
+                                    {{ rumour.to_club }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Score -->
+                        <div class="text-end">
+                            {% if score %}
+                                <div class="score-badge score-overall">
+                                    {{ "%.1f"|format(score.overall) }}
+                                </div>
+                            {% endif %}
+                            {% if rumour.reported_fee %}
+                                <div class="text-muted" style="font-size: 0.75rem;">
+                                    €{{ "%.0f"|format(rumour.reported_fee) }}M
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            
+            {% if not rumours %}
+                <div class="text-center py-4">
+                    <i class="fas fa-newspaper fa-2x text-muted mb-2"></i>
+                    <p class="text-muted mb-0">No rumours available</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Footer -->
+        <div class="powered-by">
+            <div class="text-muted">
+                Powered by <strong>TransferRank</strong> • 
+                <a href="{{ request.url_root }}" target="_blank" class="text-decoration-none">
+                    View Full Leaderboard
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Auto-refresh every 5 minutes -->
+    <script>
+        setTimeout(function() {
+            window.location.reload();
+        }, 300000); // 5 minutes
+    </script>
+</body>
+</html>

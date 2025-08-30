@@ -1,0 +1,427 @@
+{% extends "base.html" %}
+
+{% block title %}Add Transfer Rumour - TransferRank{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Leaderboard</a></li>
+            <li class="breadcrumb-item active">Add Rumour</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-plus me-2"></i>Add New Transfer Rumour
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Player Information -->
+                        <div class="row">
+                            <div class="col-12">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-user me-2"></i>Player Information
+                                </h5>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.player_name.label(class="form-label") }}
+                                    {{ form.player_name(class="form-control") }}
+                                    {% if form.player_name.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.player_name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    {{ form.position.label(class="form-label") }}
+                                    {{ form.position(class="form-select") }}
+                                    {% if form.position.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.position.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    {{ form.age.label(class="form-label") }}
+                                    {{ form.age(class="form-control") }}
+                                    {% if form.age.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.age.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form.nationality.label(class="form-label") }}
+                                    {{ form.nationality(class="form-control") }}
+                                    {% if form.nationality.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.nationality.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form.current_club.label(class="form-label") }}
+                                    {{ form.current_club(class="form-control") }}
+                                    {% if form.current_club.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.current_club.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form.target_club.label(class="form-label") }}
+                                    {{ form.target_club(class="form-control") }}
+                                    {% if form.target_club.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.target_club.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Transfer Details -->
+                        <div class="row">
+                            <div class="col-12">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-exchange-alt me-2"></i>Transfer Details
+                                </h5>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form.league.label(class="form-label") }}
+                                    {{ form.league(class="form-select") }}
+                                    {% if form.league.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.league.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form.reported_fee.label(class="form-label") }}
+                                    <div class="input-group">
+                                        <span class="input-group-text">€</span>
+                                        {{ form.reported_fee(class="form-control", placeholder="e.g., 50") }}
+                                        <span class="input-group-text">M</span>
+                                    </div>
+                                    {% if form.reported_fee.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.reported_fee.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="text-muted">Optional - leave blank if undisclosed</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form.wage_estimate.label(class="form-label") }}
+                                    <div class="input-group">
+                                        <span class="input-group-text">€</span>
+                                        {{ form.wage_estimate(class="form-control", placeholder="e.g., 200") }}
+                                        <span class="input-group-text">K/week</span>
+                                    </div>
+                                    {% if form.wage_estimate.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.wage_estimate.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="text-muted">Optional - weekly wage estimate</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.contract_years_left.label(class="form-label") }}
+                                    <div class="input-group">
+                                        {{ form.contract_years_left(class="form-control", placeholder="e.g., 2.5") }}
+                                        <span class="input-group-text">years</span>
+                                    </div>
+                                    {% if form.contract_years_left.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.contract_years_left.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="text-muted">Optional - current contract remaining</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Source Information -->
+                        <div class="row">
+                            <div class="col-12">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-newspaper me-2"></i>Source Information
+                                </h5>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.source_name.label(class="form-label") }}
+                                    {{ form.source_name(class="form-control", placeholder="e.g., Fabrizio Romano") }}
+                                    {% if form.source_name.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.source_name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.source_type.label(class="form-label") }}
+                                    {{ form.source_type(class="form-select") }}
+                                    {% if form.source_type.errors %}
+                                        <div class="text-danger small">
+                                            {% for error in form.source_type.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.source_url.label(class="form-label") }}
+                            {{ form.source_url(class="form-control", placeholder="https://...") }}
+                            {% if form.source_url.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.source_url.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="text-muted">Optional - link to the original report</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.source_claim.label(class="form-label") }}
+                            {{ form.source_claim(class="form-control", rows="3", placeholder="What exactly did the source say?") }}
+                            {% if form.source_claim.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.source_claim.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="text-muted">Optional - quote or summary of the claim</small>
+                        </div>
+                        
+                        <div class="mb-4">
+                            {{ form.article_links.label(class="form-label") }}
+                            {{ form.article_links(class="form-control", rows="3", placeholder="https://example.com/article1\nhttps://example.com/article2") }}
+                            {% if form.article_links.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.article_links.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="text-muted">Optional - additional article links, one per line</small>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>Add Rumour
+                            </button>
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Scoring Preview -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calculator me-2"></i>How Scoring Works
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="scoring-info">
+                        <div class="score-component mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><strong>Credibility (40%)</strong></span>
+                                <i class="fas fa-shield-alt text-primary"></i>
+                            </div>
+                            <p class="text-muted small mb-0">
+                                Based on source reputation and corroboration from multiple sources
+                            </p>
+                        </div>
+                        
+                        <div class="score-component mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><strong>Club Fit (30%)</strong></span>
+                                <i class="fas fa-puzzle-piece text-success"></i>
+                            </div>
+                            <p class="text-muted small mb-0">
+                                How well the player's position and style match the target club's needs
+                            </p>
+                        </div>
+                        
+                        <div class="score-component mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><strong>Value (20%)</strong></span>
+                                <i class="fas fa-euro-sign text-warning"></i>
+                            </div>
+                            <p class="text-muted small mb-0">
+                                Transfer fee compared to estimated market value
+                            </p>
+                        </div>
+                        
+                        <div class="score-component">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><strong>Momentum (10%)</strong></span>
+                                <i class="fas fa-chart-line text-info"></i>
+                            </div>
+                            <p class="text-muted small mb-0">
+                                Recent activity and coverage from multiple sources
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Tips for Better Scores
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Use trusted sources</strong> like David Ornstein or Fabrizio Romano
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Include multiple article links</strong> for corroboration
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Be accurate with fees</strong> - unrealistic prices lower value scores
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Check club needs</strong> - position fit affects the overall score
+                        </li>
+                        <li>
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Quote the source</strong> exactly to maintain credibility
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-link me-2"></i>Quick Links
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('upload_csv') }}" class="btn btn-outline-info">
+                            <i class="fas fa-upload me-1"></i>Bulk Upload CSV
+                        </a>
+                        <a href="/data/rumours_template.csv" class="btn btn-outline-secondary" download>
+                            <i class="fas fa-download me-1"></i>Download CSV Template
+                        </a>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-list me-1"></i>View Leaderboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-populate form fields if URL parameters are present
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Auto-fill player name if provided
+    const playerParam = urlParams.get('player');
+    if (playerParam) {
+        document.getElementById('player_name').value = playerParam;
+    }
+    
+    // Auto-fill source if provided
+    const sourceParam = urlParams.get('source');
+    if (sourceParam) {
+        document.getElementById('source_name').value = sourceParam;
+    }
+});
+</script>
+{% endblock %}

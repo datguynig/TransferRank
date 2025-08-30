@@ -1,0 +1,140 @@
+You are working in the existing TransferRank repository. Do not scaffold a new app or restructure folders. Make incremental, surgical edits that keep the current API, DB, routes, and run commands intact. Use British English for all copy. Avoid hyphens in UI text and never use the sentence pattern “isn’t just X, it’s Y.”
+
+Execution mode (no rebuild)
+
+Audit first, no changes: list the specific files that need edits for each task below.
+
+Implement in small commits with clear messages, touching only necessary files.
+
+Verify: run the app, exercise the affected pages, and note what passed.
+
+Deliver: update README (short), add CHANGELOG with a bullet list of edits, and push.
+
+Constraints
+
+Keep existing DB schema and seed data. Only add fields if absolutely required; if you add any, include a tiny migration that preserves current data.
+
+Keep existing packages and versions; add dependencies only if strictly needed.
+
+Do not delete components; prefer small refactors and drop-in wrappers.
+
+Keep npm run dev behaviour unchanged.
+
+Fix list (targeted)
+A) Visual polish without rewrites
+
+Create a minimal Tailwind theme map (tokens) and replace only clashing inline colours. Use a calm palette (base slate/white, primary indigo, success emerald, warn amber, danger rose).
+
+Normalise spacing and a simple type scale (H1, H2, body, small).
+
+Extract lightweight shared UI primitives in frontend/src/components/ui/ (Button, Card, Badge, TableCell). Wrap current components rather than replacing them.
+
+B) Voice and copy
+
+Add frontend/src/copy.ts and move key strings there. Tone: warm, confident, helpful. British spelling. No hyphens in user-facing text.
+
+Refresh headings, helper text, empty states, tooltip labels for credibility, fit, value, momentum.
+
+Tweak the first-run tour so it explains scoring and filters with a friendly tone.
+
+C) Images not showing
+
+Add a drop-in <SmartImage> component that accepts current props (src, alt, className).
+
+On error, swap to a deterministic initials avatar (local SVG).
+
+Add loading="lazy" and width/height to avoid layout shift.
+
+Replace image tags for players, sources, contributors with <SmartImage> only (no other changes).
+
+Add a tiny backend route /api/media/favicon?url= that fetches a site favicon with a short timeout; if it fails, return 204 so the component uses the fallback.
+
+Add a few seed images in frontend/public/seed/ used only when src is missing.
+
+D) Admin dashboard login (bug)
+
+If auth already exists: fix the password comparison, CORS, and header handling.
+
+If missing/fragile: add minimal JWT login only for admin routes.
+
+POST /api/auth/login with {password} compares to ADMIN_PASSWORD.
+
+Return a short-lived JWT signed with AUTH_SECRET.
+
+Protect admin endpoints with a FastAPI dependency.
+
+Frontend: store token in memory and localStorage; attach Authorization: Bearer <token>.
+
+Show a banner on admin pages if ADMIN_PASSWORD equals admin.
+
+Update .env.example with ADMIN_PASSWORD=admin, AUTH_SECRET=devsecret.
+
+E) Monetisation: make it helpful, not interruptive
+
+Remove blocking popups.
+
+Add a soft, contextual Upgrade panel (sidebar card and inline nudges) that explains Plus benefits: saved filter sets, email alerts for tracked players, table CSV export, an advanced analytics tab.
+
+Keep everything usable; gate Plus features with inline, non-blocking prompts and a short preview.
+
+Add /pricing with a simple comparison table and FAQ.
+
+Use a local isPlus flag (mock checkout) so it works offline.
+
+F) UX touch-ups
+
+Leaderboard: better column spacing, sticky header, mobile table tweaks, debounced search with state in URL.
+
+Player: compact hero, neat stat strip, recent activity tags.
+
+Rumour detail: “Explain my score” panel that lists each factor and weight contribution.
+
+Source page: logo or fallback, average credibility, hit rate, trend mini-chart.
+
+CSV import: show success counts, a table of failed rows with reasons, and Download errors CSV.
+
+G) Accessibility and performance
+
+Ensure focus states, semantic headings, alt text, labelled controls.
+
+Lazy-load route chunks; add image dimensions and loading="lazy".
+
+Run a quick Lighthouse check; fix obvious contrast or aria issues only.
+
+H) Tests and quality (lightweight)
+
+Backend pytest: auth success/failure and one protected admin route.
+
+Frontend Vitest: SmartImage fallback and leaderboard filter logic.
+
+Add a pre-commit config for Ruff/Black and Prettier (keep current settings if present).
+
+Deliverables
+
+CHANGELOG.md summarising each change and the files touched.
+
+Short README update: note admin login, Plus preview, and how images fall back.
+
+All acceptance checks pass.
+
+Acceptance checks
+
+Colours and spacing feel consistent; no clashing backgrounds; contrast is readable.
+
+Copy has personality and British spelling; first-run tour is clear.
+
+Player, source, and contributor images render or fall back to initials avatars.
+
+Admin login works with ADMIN_PASSWORD=admin; protected routes reject unauthorised access; default-password banner visible.
+
+Monetisation is value-led, non-blocking, with Plus previews and a simple pricing page.
+
+CSV import shows success and error breakdown with downloadable failed rows.
+
+Leaderboard, Player, Rumour, Source pages are usable on mobile and pass basic a11y checks.
+
+Tests run and pass with existing npm scripts.
+
+npm run dev still starts both servers.
+
+Start by printing the audit (files to edit and why). Then proceed with small, focused commits that satisfy the checks without rebuilding.

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TransferRank - Football Transfer Rumour Analysis{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts: Inter and DM Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    
+    <!-- Copy and localisation -->
+    <script src="{{ url_for('static', filename='js/copy.js') }}"></script>
+    
+    <!-- Smart Image component -->
+    <script src="{{ url_for('static', filename='js/smart-image.js') }}"></script>
+    
+    <!-- Plus features -->
+    <script src="{{ url_for('static', filename='js/plus-features.js') }}"></script>
+</head>
+<body>
+    <!-- Update Banner -->
+    <div class="alert alert-success mb-0 text-center" style="border-radius: 0; background: linear-gradient(45deg, #10b981, #059669); color: white; border: none;">
+        <strong><i class="fas fa-crown me-2"></i>TransferRank Enhanced!</strong> New design, reliable images, Plus features, and British copy throughout.
+        <a href="/pricing" class="btn btn-light btn-sm ms-3">
+            <i class="fas fa-star me-1"></i>Try Plus
+        </a>
+    </div>
+    
+    <!-- Modern Navigation -->
+    <nav class="navbar navbar-expand-lg border-bottom modern-nav">
+        <div class="container">
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="{{ url_for('index') }}">
+                <div class="brand-icon me-2">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <span class="brand-text">TransferRank <span class="badge bg-warning text-dark ms-1" style="font-size: 0.6rem;">PRO</span></span>
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link modern-nav-link" href="{{ url_for('index') }}">
+                            <i class="fas fa-home me-2"></i>Home
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle modern-nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-trophy me-2"></i>Rankings
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('leaderboard') }}">
+                                <i class="fas fa-chart-line me-2"></i>Transfer Leaderboard
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('source_rankings') }}">
+                                <i class="fas fa-newspaper me-2"></i>Source Rankings
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('contributor_rankings') }}">
+                                <i class="fas fa-users me-2"></i>Contributor Rankings
+                            </a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link modern-nav-link" href="{{ url_for('add_rumour') }}">
+                            <i class="fas fa-plus me-2"></i>Add Rumour
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link modern-nav-link" href="{{ url_for('upload_csv') }}">
+                            <i class="fas fa-upload me-2"></i>Upload CSV
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link modern-nav-link" href="{{ url_for('admin') }}">
+                            <i class="fas fa-cog me-2"></i>Admin
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="py-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>About TransferRank</h5>
+                    <p class="text-muted">
+                        TransferRank analyzes football transfer rumours using a sophisticated scoring system 
+                        that considers source credibility, club fit, transfer value, and momentum.
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h5>Scoring Methodology</h5>
+                    <p class="text-muted">
+                        Our algorithm combines tier-based source reliability with club needs analysis, 
+                        market value assessments, and rumour momentum tracking to provide transparent rankings.
+                    </p>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; 2025 TransferRank. Built with Flask and Bootstrap.</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <a href="/embed/top10" class="text-decoration-none me-3">
+                        <i class="fas fa-code me-1"></i>Embed Widget
+                    </a>
+                    <a href="/data/rumours_template.csv" class="text-decoration-none">
+                        <i class="fas fa-download me-1"></i>CSV Template
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS - Load main first, then charts and ratings -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Wait for Chart.js to be fully loaded before initializing charts
+        if (typeof Chart !== 'undefined') {
+            console.log('Chart.js loaded successfully');
+        } else {
+            console.warn('Chart.js not yet loaded');
+        }
+    </script>
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ratings.js') }}"></script>
+    
+    <!-- Tour Modal (shown on first visit) -->
+    <div class="modal fade" id="tourModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-info-circle me-2"></i>Welcome to TransferRank
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-star text-warning me-2"></i>How We Score</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Credibility (40%):</strong> Source reliability and corroboration</li>
+                                <li><strong>Club Fit (30%):</strong> Position needs and playing style</li>
+                                <li><strong>Value (20%):</strong> Transfer fee vs. estimated market value</li>
+                                <li><strong>Momentum (10%):</strong> Recent activity and multiple sources</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-filter text-info me-2"></i>How to Filter</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Search:</strong> Player names, clubs</li>
+                                <li><strong>League:</strong> Filter by competition</li>
+                                <li><strong>Position:</strong> Filter by player position</li>
+                                <li><strong>Fee Range:</strong> Filter by transfer value</li>
+                                <li><strong>Source Type:</strong> Filter by journalist, club, etc.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-12">
+                            <h6><i class="fas fa-users text-success me-2"></i>User Ratings</h6>
+                            <p class="mb-0">
+                                Rate rumours from 1-5 stars to contribute to our hybrid ranking system. 
+                                Your ratings combine with our algorithmic scores for more accurate rankings.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Got it!
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

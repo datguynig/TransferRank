@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="py-4">
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="container">
+                <h1 class="display-4 fw-bold mb-4" style="font-family: 'DM Sans', sans-serif;">
+                    ⚽ TransferRank
+                    <span class="badge bg-warning text-dark ms-2">PRO</span>
+                </h1>
+                <p class="lead mb-4">Stop guessing. Start knowing. We turn transfer chaos into crystal-clear insights with AI-powered analysis that separates the real deals from the clickbait.</p>
+                <div class="row mb-4">
+                    <div class="col-md-4 text-center">
+                        <div class="feature-stat">
+                            <div class="h2 text-primary fw-bold">85%</div>
+                            <small class="text-muted">Accuracy Rate</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="feature-stat">
+                            <div class="h2 text-primary fw-bold">12M+</div>
+                            <small class="text-muted">Rumours Analyzed</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="feature-stat">
+                            <div class="h2 text-primary fw-bold">24/7</div>
+                            <small class="text-muted">Live Tracking</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="cta-buttons">
+                    <a href="{{ url_for('leaderboard') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-rocket me-2"></i>Explore Rankings
+                    </a>
+                    <a href="#premium-features" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-crown me-2"></i>Go Premium
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Latest Transfer News -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="fw-bold" style="font-family: 'DM Sans', sans-serif;">
+                            <i class="fas fa-newspaper text-primary me-2"></i>
+                            Latest Transfer News
+                        </h2>
+                        {% if live_sources_active %}
+                        <div class="mt-2">
+                            <span class="badge bg-success bg-gradient">
+                                <i class="fas fa-satellite-dish me-1"></i>Live Sources Active
+                            </span>
+                            <small class="text-muted ms-2">Real-time BBC Sport integration</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <a href="{{ url_for('leaderboard') }}" class="btn btn-outline-primary">
+                        View All Rumours <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {% if latest_rumours %}
+            <div class="row g-4 mb-5">
+                {% for rumour in latest_rumours %}
+                    {% set score = rumour.scores[-1] if rumour.scores else none %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card news-card h-100" onclick="window.location='{{ url_for('rumour_detail', id=rumour.id) }}'">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="player-avatar me-3" style="width: 50px; height: 50px;">
+                                        {% if rumour.player.image_url %}
+                                            <img src="{{ rumour.player.image_url }}" 
+                                                 alt="{{ rumour.player.name }}" 
+                                                 class="avatar-img"
+                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        {% else %}
+                                            <img src="https://ui-avatars.com/api/?name={{ rumour.player.name|urlencode }}&background=667eea&color=fff&size=50&font-size=0.6" 
+                                                 alt="{{ rumour.player.name }}" 
+                                                 class="avatar-img"
+                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        {% endif %}
+                                        <div class="player-initials" style="font-size: 1rem; display: none;">
+                                            {% set name_parts = rumour.player.name.split() %}
+                                            {{ name_parts[0][0] }}{% if name_parts|length > 1 %}{{ name_parts[-1][0] }}{% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h5 class="card-title mb-1 fw-bold">{{ rumour.player.name }}</h5>
+                                        <div class="transfer-direction">
+                                            <span class="badge bg-light text-dark me-1">{{ rumour.from_club }}</span>
+                                            <i class="fas fa-arrow-right text-success mx-1"></i>
+                                            <span class="badge bg-primary">{{ rumour.to_club }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <div class="text-center">
+                                                <div class="small text-muted">TransferRank</div>
+                                                {% if score %}
+                                                    <div class="score-badge score-overall small">
+                                                        {{ "%.1f"|format(score.overall) }}
+                                                    </div>
+                                                {% else %}
+                                                    <span class="text-muted">—</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="text-center">
+                                                <div class="small text-muted">Fee</div>
+                                                {% if rumour.reported_fee %}
+                                                    <div class="fw-semibold">€{{ "%.0f"|format(rumour.reported_fee) }}M</div>
+                                                {% else %}
+                                                    <span class="text-muted small">Undisclosed</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <div class="source-logo" style="width: 24px; height: 24px; font-size: 0.75rem; margin-right: 0.5rem;">
+                                            {{ rumour.source.name[0] }}
+                                        </div>
+                                        <small class="text-muted">{{ rumour.source.name }}</small>
+                                    </div>
+                                    <small class="text-muted">
+                                        {{ rumour.created_at.strftime('%d %b') }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+                <h5>No transfer news yet</h5>
+                <p class="text-muted">Be the first to <a href="{{ url_for('add_rumour') }}">add a transfer rumour</a>!</p>
+            </div>
+        {% endif %}
+
+        <!-- Quick Stats or Features Section -->
+        <div class="cta-section">
+            <div class="container">
+                <h3 class="fw-bold mb-3" style="font-family: 'DM Sans', sans-serif;">The Science Behind the Magic</h3>
+                <p class="lead mb-4">Our AI doesn't just read rumours—it dissects them. Every whisper gets the full treatment: journalist track records, club needs analysis, market valuations, and social media momentum. Think of it as your personal transfer insider.</p>
+                <div class="row g-4 mt-4">
+                    <div class="col-md-3 col-6">
+                        <div class="text-center">
+                            <div class="score-badge score-credibility mb-2" style="display: inline-block;">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h6 class="fw-bold">Credibility</h6>
+                            <small class="text-muted">Source reputation analysis</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="text-center">
+                            <div class="score-badge score-fit mb-2" style="display: inline-block;">
+                                <i class="fas fa-puzzle-piece"></i>
+                            </div>
+                            <h6 class="fw-bold">Club Fit</h6>
+                            <small class="text-muted">Positional needs matching</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="text-center">
+                            <div class="score-badge score-value mb-2" style="display: inline-block;">
+                                <i class="fas fa-euro-sign"></i>
+                            </div>
+                            <h6 class="fw-bold">Value</h6>
+                            <small class="text-muted">Market value assessment</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="text-center">
+                            <div class="score-badge score-momentum mb-2" style="display: inline-block;">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h6 class="fw-bold">Momentum</h6>
+                            <small class="text-muted">Recent activity tracking</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="cta-buttons mt-4">
+                    <a href="{{ url_for('leaderboard') }}" class="btn btn-primary">
+                        Explore Full Rankings
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Premium Features Section -->
+        <div id="premium-features" class="card bg-gradient-primary text-white mb-5">
+            <div class="card-body text-center py-5">
+                <h2 class="fw-bold mb-4" style="font-family: 'DM Sans', sans-serif;">
+                    <i class="fas fa-crown me-2"></i>
+                    Level Up with TransferRank Pro
+                </h2>
+                <p class="lead mb-4">Get the insider edge with exclusive features that turn you into a transfer prophet.</p>
+                
+                <div class="row g-4 mb-5">
+                    <div class="col-md-3">
+                        <div class="premium-feature">
+                            <i class="fas fa-bell fa-2x mb-3"></i>
+                            <h5>Smart Alerts</h5>
+                            <p class="small">Get notified instantly when high-probability transfers emerge for your teams</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="premium-feature">
+                            <i class="fas fa-chart-pie fa-2x mb-3"></i>
+                            <h5>Advanced Analytics</h5>
+                            <p class="small">Deep-dive into transfer patterns, success rates, and predictive modeling</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="premium-feature">
+                            <i class="fas fa-mobile-alt fa-2x mb-3"></i>
+                            <h5>Mobile App</h5>
+                            <p class="small">Premium mobile experience with push notifications and offline access</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="premium-feature">
+                            <i class="fas fa-users fa-2x mb-3"></i>
+                            <h5>Expert Community</h5>
+                            <p class="small">Join our exclusive Discord with verified journalists and scouts</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="pricing-cards row g-3 justify-content-center mb-4">
+                    <div class="col-md-4">
+                        <div class="card text-dark">
+                            <div class="card-body">
+                                <h5 class="card-title">Monthly</h5>
+                                <div class="h2 text-primary">£9.99<small class="fs-6 text-muted">/month</small></div>
+                                <a href="#" class="btn btn-primary">Start Free Trial</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-dark border-warning">
+                            <div class="card-header bg-warning text-dark text-center">
+                                <strong>Most Popular</strong>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Annual</h5>
+                                <div class="h2 text-primary">£89.99<small class="fs-6 text-muted">/year</small></div>
+                                <small class="text-success">Save 25%</small>
+                                <a href="#" class="btn btn-warning text-dark mt-2">Get Started</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="small mb-0">
+                    <i class="fas fa-shield-alt me-1"></i>
+                    7-day free trial • Cancel anytime • Used by 10,000+ football fans worldwide
+                </p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.premium-feature i {
+    opacity: 0.9;
+}
+.pricing-cards .card {
+    transition: transform 0.2s ease;
+}
+.pricing-cards .card:hover {
+    transform: translateY(-5px);
+}
+</style>
+{% endblock %}

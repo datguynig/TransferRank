@@ -1,0 +1,382 @@
+{% extends "base.html" %}
+
+{% block title %}{{ rumour.player.name }} to {{ rumour.to_club }} - TransferRank{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Leaderboard</a></li>
+            <li class="breadcrumb-item active">Rumour Details</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Rumour Header -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="player-avatar me-3" style="width: 80px; height: 80px;">
+                                    <div class="player-initials" style="font-size: 1.5rem;">
+                                        {% set name_parts = rumour.player.name.split() %}
+                                        {{ name_parts[0][0] }}{% if name_parts|length > 1 %}{{ name_parts[-1][0] }}{% endif %}
+                                    </div>
+                                </div>
+                                <div>
+                                    <h2 class="mb-1">{{ rumour.player.name }}</h2>
+                                    <p class="text-muted mb-1">{{ rumour.position }} • Age {{ rumour.player.age }} • {{ rumour.player.nationality }}</p>
+                                    <p class="mb-0">
+                                        <span class="fw-semibold">{{ rumour.from_club }}</span>
+                                        <i class="fas fa-arrow-right mx-2 text-success"></i>
+                                        <span class="fw-semibold text-info">{{ rumour.to_club }}</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            {% if score %}
+                                <div class="overall-score-display">
+                                    <div class="score-circle">
+                                        <span class="score-value">{{ "%.1f"|format(score.overall) }}</span>
+                                        <small class="score-label">TransferRank</small>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-info-circle me-2"></i>Transfer Details</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>League:</strong> {{ rumour.league }}</li>
+                                <li><strong>Fee:</strong> 
+                                    {% if rumour.reported_fee %}
+                                        €{{ "%.0f"|format(rumour.reported_fee) }}M
+                                    {% else %}
+                                        Undisclosed
+                                    {% endif %}
+                                </li>
+                                <li><strong>Weekly Wage:</strong> 
+                                    {% if rumour.wage_estimate %}
+                                        €{{ "%.0f"|format(rumour.wage_estimate) }}K
+                                    {% else %}
+                                        Undisclosed
+                                    {% endif %}
+                                </li>
+                                <li><strong>Contract Years Left:</strong> 
+                                    {% if rumour.contract_years_left %}
+                                        {{ rumour.contract_years_left }} years
+                                    {% else %}
+                                        Unknown
+                                    {% endif %}
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-chart-line me-2"></i>Rumour Activity</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>First Seen:</strong> {{ rumour.first_seen_date.strftime('%B %d, %Y') }}</li>
+                                <li><strong>Last Seen:</strong> {{ rumour.last_seen_date.strftime('%B %d, %Y') }}</li>
+                                <li><strong>Total Sightings:</strong> {{ rumour.sightings_count }}</li>
+                                <li><strong>Sources (7 days):</strong> {{ rumour.distinct_sources_7d }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Score Breakdown -->
+            {% if score %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calculator me-2"></i>Score Breakdown
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Individual Scores</h6>
+                            <div class="score-breakdown">
+                                <div class="score-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Credibility</span>
+                                        <div class="score-badge score-credibility">{{ "%.1f"|format(score.credibility) }}</div>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-primary" style="width: {{ score.credibility }}%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="score-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Club Fit</span>
+                                        <div class="score-badge score-fit">{{ "%.1f"|format(score.fit) }}</div>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-success" style="width: {{ score.fit }}%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="score-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Value</span>
+                                        <div class="score-badge score-value">{{ "%.1f"|format(score.value) }}</div>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-warning" style="width: {{ score.value }}%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="score-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Momentum</span>
+                                        <div class="score-badge score-momentum">{{ "%.1f"|format(score.momentum) }}</div>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-info" style="width: {{ score.momentum }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Calculation Details</h6>
+                            {% set weights = score.weights_json | from_json %}
+                            <div class="calculation-details">
+                                <p class="mb-2"><strong>Weighted Formula:</strong></p>
+                                <div class="formula-breakdown">
+                                    <div>{{ "%.1f"|format(score.credibility) }} × {{ "%.1f"|format(weights.credibility) }} = {{ "%.1f"|format(score.credibility * weights.credibility) }}</div>
+                                    <div>{{ "%.1f"|format(score.fit) }} × {{ "%.1f"|format(weights.fit) }} = {{ "%.1f"|format(score.fit * weights.fit) }}</div>
+                                    <div>{{ "%.1f"|format(score.value) }} × {{ "%.1f"|format(weights.value) }} = {{ "%.1f"|format(score.value * weights.value) }}</div>
+                                    <div>{{ "%.1f"|format(score.momentum) }} × {{ "%.1f"|format(weights.momentum) }} = {{ "%.1f"|format(score.momentum * weights.momentum) }}</div>
+                                    <hr class="my-2">
+                                    <div class="fw-bold">Total = {{ "%.1f"|format(score.overall) }}</div>
+                                </div>
+                                <small class="text-muted">Calculated on {{ score.calculated_at.strftime('%B %d, %Y at %H:%M') }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Momentum Chart -->
+                    <div class="mt-4">
+                        <h6>Momentum Trend</h6>
+                        <div style="height: 200px; max-height: 200px;">
+                            <canvas id="momentumChart" style="max-height: 200px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Source Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-newspaper me-2"></i>Source Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Primary Source</h6>
+                            <div class="source-info">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="fw-semibold me-2">{{ rumour.source.name }}</span>
+                                    <span class="badge badge-source-{{ rumour.source.reputation_tag }}">
+                                        {{ rumour.source.reputation_tag.title() }}
+                                    </span>
+                                </div>
+                                <p class="text-muted mb-2">{{ rumour.source.type.title() }}</p>
+                                <div class="source-stats">
+                                    <small class="text-muted">
+                                        Avg. Credibility: {{ "%.1f"|format(rumour.source.avg_credibility) }}% • 
+                                        Hit Rate: {{ "%.1f"|format(rumour.source.hit_rate * 100) }}%
+                                    </small>
+                                </div>
+                                {% if rumour.source_url %}
+                                    <a href="{{ rumour.source_url }}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                                        <i class="fas fa-external-link-alt me-1"></i>View Original
+                                    </a>
+                                {% endif %}
+                                <a href="{{ url_for('source_detail', id=rumour.source.id) }}" class="btn btn-sm btn-outline-info mt-2">
+                                    <i class="fas fa-info-circle me-1"></i>Source Profile
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Source Claim</h6>
+                            {% if rumour.source_claim %}
+                                <blockquote class="blockquote">
+                                    <p class="mb-0">"{{ rumour.source_claim }}"</p>
+                                </blockquote>
+                            {% else %}
+                                <p class="text-muted">No specific claim recorded.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Additional Article Links -->
+                    {% if rumour.article_links_list %}
+                        <hr>
+                        <h6>Additional Articles</h6>
+                        <div class="article-links">
+                            {% for link in rumour.article_links_list %}
+                                <a href="{{ link }}" target="_blank" class="btn btn-sm btn-outline-secondary me-2 mb-2">
+                                    <i class="fas fa-link me-1"></i>Article {{ loop.index }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- User Rating -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users me-2"></i>User Rating
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if rumour.user_rating_count > 0 %}
+                        <div class="current-rating mb-3">
+                            <div class="rating-stars">
+                                {% for i in range(1, 6) %}
+                                    <i class="fas fa-star fa-lg {% if i <= rumour.average_user_rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                {% endfor %}
+                            </div>
+                            <p class="mb-0 mt-2">
+                                <strong>{{ "%.1f"|format(rumour.average_user_rating) }}</strong> out of 5
+                            </p>
+                            <small class="text-muted">Based on {{ rumour.user_rating_count }} ratings</small>
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-3">No ratings yet</p>
+                    {% endif %}
+                    
+                    <div class="rating-form">
+                        <p class="fw-semibold mb-2">Rate this rumour:</p>
+                        <div class="star-rating interactive" data-rumour-id="{{ rumour.id }}">
+                            {% for i in range(1, 6) %}
+                                <i class="fas fa-star fa-lg" data-rating="{{ i }}"></i>
+                            {% endfor %}
+                        </div>
+                        <small class="text-muted d-block mt-2">
+                            Click stars to rate credibility and likelihood
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-share me-2"></i>Share & Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" onclick="shareRumour()">
+                            <i class="fas fa-share-alt me-1"></i>Share Rumour
+                        </button>
+                        <a href="{{ url_for('player_detail', id=rumour.player.id) }}" class="btn btn-outline-info">
+                            <i class="fas fa-user me-1"></i>View Player Profile
+                        </a>
+                        <a href="{{ url_for('index', search=rumour.to_club) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-search me-1"></i>More {{ rumour.to_club }} Rumours
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Rumours -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-random me-2"></i>Related Rumours
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted text-center">
+                        <i class="fas fa-construction me-1"></i>
+                        Related rumours feature coming soon
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal fade" id="shareModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Share Rumour</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="shareUrl" class="form-label">Share URL</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="shareUrl" value="{{ request.url }}" readonly>
+                        <button class="btn btn-outline-secondary" onclick="copyShareUrl()">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="social-share">
+                    <h6>Share on social media:</h6>
+                    <a href="https://twitter.com/intent/tweet?text={{ rumour.player.name }} to {{ rumour.to_club }}%20{{ request.url }}" 
+                       target="_blank" class="btn btn-outline-info me-2">
+                        <i class="fab fa-twitter me-1"></i>Twitter
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url }}" 
+                       target="_blank" class="btn btn-outline-primary">
+                        <i class="fab fa-facebook me-1"></i>Facebook
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function shareRumour() {
+    const shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
+    shareModal.show();
+}
+
+function copyShareUrl() {
+    const shareUrl = document.getElementById('shareUrl');
+    shareUrl.select();
+    document.execCommand('copy');
+    
+    // Show feedback
+    const button = event.target;
+    const originalHTML = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i>';
+    button.classList.replace('btn-outline-secondary', 'btn-success');
+    
+    setTimeout(() => {
+        button.innerHTML = originalHTML;
+        button.classList.replace('btn-success', 'btn-outline-secondary');
+    }, 2000);
+}
+
+// Initialize momentum chart
+document.addEventListener('DOMContentLoaded', function() {
+    initializeMomentumChart({{ rumour.id }});
+});
+</script>
+{% endblock %}

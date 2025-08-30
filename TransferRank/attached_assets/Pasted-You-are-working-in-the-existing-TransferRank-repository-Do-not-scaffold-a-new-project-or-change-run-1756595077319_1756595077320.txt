@@ -1,0 +1,178 @@
+You are working in the existing TransferRank repository. Do not scaffold a new project or change run commands. Make surgical edits and commit in small steps. Use British English in all user facing copy and avoid hyphens in UI text.
+
+Integrations to add
+
+News 1: BBC Sport Football RSS (no key).
+
+News 2: Guardian Open Platform Content API (free key).
+
+Imagery: Wikimedia Commons via MediaWiki API (free, with attribution).
+
+High level plan
+
+Add two small backend fetchers for BBC RSS and Guardian. Normalise items into our current rumours create flow without breaking the schema.
+
+Add a lightweight image resolver that serves a best photo for a player or a publisher logo, with licence and attribution metadata.
+
+Expose minimal admin endpoints to trigger manual pulls and configure schedules.
+
+Add a tiny UI nudge: “Live sources active” badge and attribution display on Rumour and Player pages.
+
+Keep everything optional. If keys are missing or network fails, fail gracefully and use existing seed data.
+
+Backend tasks (FastAPI)
+
+Create files and routes inside the current backend. Keep names consistent with our structure.
+
+Env and settings
+
+Update .env.example with:
+
+GUARDIAN_API_KEY=your-key
+FEEDS_BBC_FOOTBALL=https://feeds.bbci.co.uk/sport/football/rss.xml
+MEDIAWIKI_API=https://en.wikipedia.org/w/api.php
+
+
+Load these in our settings module.
+
+News normalisers
+
+app/services/ingest/bbc_rss.py
+
+Fetch RSS, parse items, map to our rumour fields: player, from_club (optional), to_club (optional), league (infer if possible), position (unknown → null), source_name="BBC Sport", source_url=item.link, source_type="outlet", first_seen_date=pubDate.
+
+Extract player guess from title using a small list of current players and fuzzy match; if uncertain, leave null and still store as a general rumour.
+
+Return a list of RumourCreate payloads.
+
+app/services/ingest/guardian.py
+
+Guardian search endpoint: query terms transfer OR signing OR fee and section football.
+
+Use GUARDIAN_API_KEY. Pull webTitle, webUrl, webPublicationDate, and fields.trailText if available.
+
+Map to our rumour fields with source_name="The Guardian", source_type="outlet". Same player extraction approach as BBC.
+
+De-dupe logic
+
+app/services/ingest/dedupe.py: reject candidates whose source_url already exists, or whose (player, to_club) and publication time are within 48 hours of an existing rumour. Prefer the more credible source if there is a clash.
+
+Ingest orchestration and routes
+
+app/routers/ingest.py with:
+
+POST /api/ingest/bbc → runs BBC fetch, normalise, dedupe, then calls our existing create service for each new rumour.
+
+POST /api/ingest/guardian → same for Guardian.
+
+POST /api/ingest/run-all → runs both in sequence and returns a summary {added, skipped}.
+
+Guard these routes behind admin auth if present; otherwise allow in dev only.
+
+Image resolver with attribution
+
+app/services/images/wikimedia.py
+
+Given player_name, call MediaWiki action=query&prop=pageimages|imageinfo&piprop=thumbnail|original&inprop=url&format=json with sensible fallbacks.
+
+Also support publisher_domain to fetch a Wikipedia page for the outlet if possible; if not, return null and let the frontend fall back.
+
+Return { image_url, thumb_url, license, credit, source_url }. Cache results on disk or in memory for 24 hours.
+
+app/routers/images.py
+
+GET /api/images/player?name= returns the resolver JSON.
+
+GET /api/images/publisher?domain= returns the resolver JSON.
+
+Scheduling (optional, dev safe)
+
+Add a tiny background task using asyncio.create_task or APScheduler only if that library already exists; otherwise skip scheduling.
+
+Provide a README note with a curl example to trigger ingest manually.
+
+Tests (light)
+
+One test for BBC ingest that stubs the RSS and verifies normalisation.
+
+One test for Guardian ingest that stubs a single item.
+
+One test for Wikimedia resolver that stubs a response and confirms attribution fields.
+
+Frontend tasks (React)
+
+ENV and config
+
+Add GUARDIAN_API_KEY note to README, but never expose the key in the client.
+
+Image integration
+
+Enhance our existing SmartImage (or create it if missing) to accept attribution metadata.
+
+When rendering a Player header, call /api/images/player?name= on mount, set the image source if present, and show a small “i” tooltip or link “Photo credit” that opens attribution in a popover.
+
+For source logos, try /api/images/publisher?domain=; otherwise show initials avatar.
+
+Admin page actions
+
+Add buttons for “Run BBC ingest” and “Run Guardian ingest” that call /api/ingest/* and show a toast summary of added vs skipped.
+
+Non-blocking, and only visible to admin.
+
+UI touch
+
+At the top of the Leaderboard, show a small badge “Live sources active” when either ingest route has run in the last 24 hours. Use our existing muted colour tokens.
+
+On Rumour detail, if a rumour came from BBC or Guardian, render a compact attribution line that links to the original article.
+
+Data mapping details
+
+For both feeds set:
+
+source_name → “BBC Sport” or “The Guardian”
+
+source_url → the article URL
+
+source_type → “outlet”
+
+first_seen_date → published date from feed
+
+last_seen_date → same as first on create
+
+sightings_count → 1 and distinct_sources_7d → 1
+
+Leave fee, wage_estimate, contract_years_left as null unless clearly present in the headline.
+
+League and position can be null; our scoring should handle fallbacks.
+
+Do not change the DB schema unless strictly required. If a migration is unavoidable, keep it minimal and backward compatible.
+
+Error handling and quotas
+
+If Guardian key missing or limit reached, return 200 with {added:0, skipped:N, note:"guardian-unavailable"}.
+
+If RSS fetch fails, skip silently and log.
+
+Cache Wikimedia lookups to avoid hammering the API.
+
+Documentation and delivery
+
+Update README: add “Live sources” section with env setup, manual ingest commands, and attribution rules for Wikimedia.
+
+Add a short CHANGELOG entry listing new routes and files.
+
+Verify that npm run dev still starts both servers.
+
+Acceptance checks
+
+Clicking Admin → “Run BBC ingest” or “Run Guardian ingest” adds new rumours or reports zero added without breaking anything.
+
+New rumours show source name and link to original article.
+
+Player pages pull an image when Wikimedia has one and show an attribution link.
+
+App remains fully usable offline; if all networks fail, seed data and fallbacks still render.
+
+No UI copy uses hyphens.
+
+Make these changes now, starting with a quick file-level audit plan, then implement in small commits

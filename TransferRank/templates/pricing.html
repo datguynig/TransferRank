@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Pricing - TransferRank{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold mb-3">Choose Your Plan</h1>
+                <p class="lead text-muted">Get the complete transfer intelligence experience</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center">
+        <!-- Free Plan -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header text-center">
+                    <h3 class="fw-bold">Free</h3>
+                    <div class="display-4 fw-bold">£0</div>
+                    <small class="text-muted">Forever</small>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Full leaderboard access
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Basic filters
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            View score breakdowns
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Player and source pages
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-outline-secondary w-100" disabled>
+                        Current Plan
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Plus Plan -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 border-primary">
+                <div class="card-header text-center bg-primary text-white">
+                    <h3 class="fw-bold">Plus</h3>
+                    <div class="display-4 fw-bold">£9</div>
+                    <small>per month</small>
+                    <div class="badge bg-warning text-dark mt-2">Most Popular</div>
+                </div>
+                <div class="card-body">
+                    <p class="text-center mb-3"><strong>Everything in Free, plus:</strong></p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-star text-warning me-2"></i>
+                            Save custom filter combinations
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-star text-warning me-2"></i>
+                            Email alerts for tracked players
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-star text-warning me-2"></i>
+                            Export any table to CSV
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-star text-warning me-2"></i>
+                            Advanced analytics dashboard
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-star text-warning me-2"></i>
+                            Source reliability trends
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-primary w-100" onclick="mockUpgrade('monthly')">
+                        Try Plus Free
+                    </button>
+                    <div class="text-center mt-2">
+                        <small class="text-muted">7-day free trial</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FAQ Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h2 class="text-center mb-4">Frequently Asked Questions</h2>
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    What sources do you track?
+                                </button>
+                            </h3>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    We monitor reliable football journalists, official club accounts, and trusted news outlets. Each source is rated for historical accuracy.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    How accurate are your scores?
+                                </button>
+                            </h3>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Our scoring combines source credibility, club fit analysis, transfer value assessment, and rumour momentum. The algorithm is continuously refined based on actual transfer outcomes.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    Can I cancel anytime?
+                                </button>
+                            </h3>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes, you can cancel your Plus subscription at any time. You'll continue to have access until the end of your billing period.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mock Upgrade Modal -->
+<div class="modal fade" id="upgradeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upgrade to Plus</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="checkout-form">
+                    <i class="fas fa-credit-card fa-3x text-primary mb-3"></i>
+                    <h4>Start Your Free Trial</h4>
+                    <p class="text-muted mb-4">7 days free, then £9/month</p>
+                    <button class="btn btn-primary btn-lg" onclick="completeUpgrade()">
+                        Confirm Upgrade
+                    </button>
+                </div>
+                <div id="upgrade-success" style="display: none;">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h4>Welcome to Plus!</h4>
+                    <p class="text-muted">Your free trial has started. Enjoy all Plus features!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function mockUpgrade(plan) {
+    const modal = new bootstrap.Modal(document.getElementById('upgradeModal'));
+    modal.show();
+}
+
+function completeUpgrade() {
+    // Mock upgrade success
+    localStorage.setItem('isPlus', 'true');
+    localStorage.setItem('trialStarted', new Date().toISOString());
+    
+    // Show success state
+    document.getElementById('checkout-form').style.display = 'none';
+    document.getElementById('upgrade-success').style.display = 'block';
+    
+    // Redirect after delay
+    setTimeout(() => {
+        window.location.href = '/leaderboard?upgraded=true';
+    }, 2000);
+}
+</script>
+{% endblock %}
